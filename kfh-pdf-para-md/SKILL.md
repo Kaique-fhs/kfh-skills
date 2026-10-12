@@ -72,6 +72,8 @@ texto da coluna direita...
 
 O marcador é sempre `<!-- <arquivo> | p. <N> -->`. Nunca altere, apague ou renumere um marcador.
 
+Dois textos fixos podem aparecer no lugar do texto de uma página: `[não extraído: página sem camada de texto, provável escaneado]` (página escaneada, sem OCR) e `[página sem conteúdo]` (página realmente vazia no PDF). Nenhum dos dois é erro e nenhum dos dois pode ser preenchido, removido ou reescrito.
+
 ## O que esta skill não faz
 
-OCR (página sem camada de texto sai como `[não extraído: página sem camada de texto, provável escaneado]`), resumo, tradução, busca de informação (isso é a `kfh-md-buscar`), recursão em subpastas.
+OCR (página sem camada de texto sai como `[não extraído: página sem camada de texto, provável escaneado]`; página vazia sai como `[página sem conteúdo]`), resumo, tradução, busca de informação (isso é a `kfh-md-buscar`), recursão em subpastas.
