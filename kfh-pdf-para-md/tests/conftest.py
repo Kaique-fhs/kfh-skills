@@ -28,6 +28,22 @@ def _pagina_colunas(n: int) -> dict:
     return {"textos": esq + dir_ + [CABECALHO, _rodape(n)]}
 
 
+def _pagina_artigo_p1(n: int) -> dict:
+    titulo = linhas_de_texto(72, 770, [
+        "Um estudo longo sobre a associacao entre variaveis categoricas em amostras pequenas",
+        "e a sua aplicacao em pesquisas de saude publica no Brasil contemporaneo e rural",
+    ])
+    esq = linhas_de_texto(60, 720, [
+        "Esq linha um.", "Esq linha dois.", "Esq linha tres.", "Esq linha quatro.",
+        "Esq linha cinco.", "Esq linha seis bem-",
+    ])
+    dir_ = linhas_de_texto(310, 720, [
+        "dois Dir linha um.", "Dir linha dois.", "Dir linha tres.", "Dir linha quatro.",
+        "Dir linha cinco.", "Dir linha seis.",
+    ])
+    return {"textos": titulo + esq + dir_ + [CABECALHO, _rodape(n)]}
+
+
 def _pagina_tabela(n: int) -> dict:
     celulas = [(80, 760, "ano"), (200, 760, "n"), (80, 742, "2020"), (200, 742, "30"), (80, 724, "2021"), (200, 724, "45")]
     return {
@@ -47,7 +63,7 @@ def pdf_texto(tmp_path) -> Path:
     """3 páginas de texto corrido, cabeçalho repetido e número de página no rodapé; hifenização na p. 1."""
     paginas = [
         _pagina_texto(1, ["Introdução à estatís-", "tica aplicada.", "Segunda frase da página um."]),
-        _pagina_texto(2, ["Página dois começa aqui.", "Outra frase."]),
+        _pagina_texto(2, ["Página dois começa aqui.", "Página dois fala de estatística.", "Outra frase."]),
         _pagina_texto(3, ["Página três encerra."]),
     ]
     return _grava(tmp_path, "texto.pdf", gerar_pdf(paginas))
@@ -56,6 +72,12 @@ def pdf_texto(tmp_path) -> Path:
 @pytest.fixture
 def pdf_coluna_dupla(tmp_path) -> Path:
     return _grava(tmp_path, "colunas.pdf", gerar_pdf([_pagina_colunas(1), _pagina_colunas(2), _pagina_colunas(3)]))
+
+
+@pytest.fixture
+def pdf_artigo_p1(tmp_path) -> Path:
+    """Primeira página de artigo: título largo, duas colunas e quebra 'bem-' / 'dois' entre colunas."""
+    return _grava(tmp_path, "artigo.pdf", gerar_pdf([_pagina_artigo_p1(1)]))
 
 
 @pytest.fixture
@@ -68,7 +90,10 @@ def pdf_misto(tmp_path) -> Path:
     """p.1 texto, p.2 colunas, p.3 tabela."""
     return _grava(tmp_path, "misto.pdf", gerar_pdf([
         _pagina_texto(1, ["Introdução à estatís-", "tica aplicada.", "Segunda frase da página um."]),
-        _pagina_colunas(2),
+        {"textos": linhas_de_texto(60, 770, ["Coluna esquerda linha um.", "Coluna esquerda linha dois.", "Coluna esquerda linha tres.",
+                                             "Página dois fala de estatística."])
+                   + linhas_de_texto(310, 770, ["Coluna direita linha um.", "Coluna direita linha dois.", "Coluna direita linha tres."])
+                   + [CABECALHO, _rodape(2)]},
         _pagina_tabela(3),
     ]))
 

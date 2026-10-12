@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 from pathlib import Path
 
 import pdfplumber
@@ -65,14 +66,33 @@ def test_processar_pdf_gera_md_fiel(pdf_misto, tmp_path):
     assert "Revista Teste, v. 1" not in md.split("---", 2)[2]
     assert 'removido_repetido: ["Revista Teste, v. 1", "numeração de página"]' in md
     assert "removido: Revista Teste, v. 1" in r.observacoes
-    # não acrescenta: toda palavra do corpo existe no PDF (hifenização junta, então compara sem hifens)
+    # não acrescenta: toda palavra do corpo (com hifens) existe no texto bruto, sem pré-junção
     corpo = md.split("---", 2)[2]
     corpo_sem_marcadores = re.sub(r"<!--.*?-->", "", corpo)
+    corpo_sem_marcadores = re.sub(r"^\|(?: --- \|)+$", "", corpo_sem_marcadores, flags=re.M)  # separador de tabela
     with pdfplumber.open(str(pdf_misto)) as pdf:
         bruto = "\n".join((pg.extract_text() or "") for pg in pdf.pages)
-    bruto_juntado = re.sub(r"(\w)-\n(\w)", r"\1\2", bruto)
-    extras = _palavras(corpo_sem_marcadores) - _palavras(bruto_juntado) - _palavras(bruto)
-    assert extras == set(), f"palavras inventadas: {extras}"
+    palavras_corpo = Counter(re.findall(r"[\w-]+", corpo_sem_marcadores.lower()))
+    palavras_bruto = Counter(re.findall(r"[\w-]+", bruto.lower()))
+    # palavra juntada na quebra de linha: a forma junta existe em outro ponto do bruto (regra do vocabulário);
+    # cada junção legítima soma 1 ao permitido dessa forma
+    for ini, fim in re.findall(r"(\w+)-\n(\w+)", bruto.lower()):
+        if palavras_bruto[ini + fim] > 0:
+            palavras_bruto[ini + fim] += 1
+    inventadas = set(palavras_corpo) - set(palavras_bruto)
+    assert inventadas == set(), f"palavras inventadas: {inventadas}"
+    duplicadas = {w: c for w, c in palavras_corpo.items() if c > palavras_bruto[w]}
+    assert duplicadas == {}, f"palavras duplicadas: {duplicadas}"
+
+
+def test_caminho_longo_grava_com_prefixo_estendido(pdf_texto, tmp_path):
+    saida = tmp_path
+    while len(str((saida / "texto.md").absolute())) < 255:
+        saida = saida / ("pasta_longa_" + "x" * 40)
+    r = processar_pdf(pdf_texto, saida, sobrescrever=False)
+    assert r.erro is None, r.erro
+    assert len(str(r.saida.absolute())) >= 255
+    assert Path("\\\\?\\" + str(r.saida.absolute())).exists()
 
 
 def test_processar_pdf_escaneado_marca_pagina(pdf_escaneado, tmp_path):

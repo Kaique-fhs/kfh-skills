@@ -14,7 +14,7 @@ O `.md` vai ser citado por outra pessoa, ou por outra skill, como se fosse o PDF
 ## O que você pode e o que nunca pode fazer no texto extraído
 
 **Pode:**
-- remover cabeçalho ou rodapé repetido que o script deixou passar;
+- remover cabeçalho ou rodapé repetido que o script deixou passar (só repetição mecânica; é uma edição no `.md`, peça permissão ao usuário e relate no passo 4);
 - juntar palavra hifenizada na quebra de linha;
 - normalizar espaço;
 - reordenar blocos de uma página em coluna dupla que saiu embaralhada.
@@ -26,6 +26,8 @@ O `.md` vai ser citado por outra pessoa, ou por outra skill, como se fosse o PDF
 - preencher página marcada como não extraída;
 - corrigir "erro" do autor;
 - remover trecho por achar irrelevante.
+
+Palavra composta quebrada no fim da linha (ex.: `qui-\nquadrado`) só é juntada quando a forma junta aparece em outro ponto do mesmo PDF; caso contrário fica com hífen e quebra, e você não a corrige à mão.
 
 Se o pedido for "extrai e resume", extraia com esta skill e trate o resumo como outra tarefa, depois, fora dela, dizendo isso ao usuário.
 
@@ -39,7 +41,7 @@ Se o pedido for "extrai e resume", extraia com esta skill e trate o resumo como 
    - Código 0: todos os PDFs abriram. Código 1: algum não abriu (protegido, corrompido, caminho errado); o `stderr` diz qual. Continue com os que abriram e relate os outros.
    - Página não extraída (escaneada) **não** é erro: o script segue e marca.
    - `.md` que já existe é pulado; só regrave com `--sobrescrever` se o usuário pediu.
-3. **Confira só o que precisa.** Para cada `.md`, leia o frontmatter: `tipos_por_pagina`, `paginas_nao_extraidas`, `removido_repetido`. Abra apenas as páginas marcadas `coluna-dupla` ou `tabelas` e veja se a ordem de leitura faz sentido. Se uma frase está cortada e continua no bloco errado, mova o bloco. Não reescreva a frase.
+3. **Confira só o que precisa.** Para cada `.md`, leia o frontmatter: `tipos_por_pagina`, `paginas_nao_extraidas`, `removido_repetido`. Abra apenas as páginas marcadas `coluna-dupla` ou `tabelas` e veja se a ordem de leitura faz sentido. Se uma frase está cortada e continua no bloco errado, mova o bloco. Não reescreva a frase. Em arquivo cujo `tipo_detectado` é `coluna-dupla` ou `misto`, abra também a p. 1 e qualquer página marcada `texto`: se as frases alternam entre dois assuntos a cada linha, a página tem duas colunas que o script não separou; reordene os blocos e relate no passo 4.
 4. **Relate ao usuário**, nesta ordem: a tabela de resumo do script; páginas não extraídas (arquivo e página); o que foi removido como repetição (para ele conferir que não era texto legítimo); páginas que você reordenou.
 5. **Pedidos fora do escopo:** OCR, resumo, tradução. Diga que esta skill não faz e, no caso de OCR, liste as páginas afetadas para o usuário resolver fora.
 

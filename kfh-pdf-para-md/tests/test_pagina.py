@@ -77,3 +77,19 @@ def test_pagina_curta_sem_imagem_e_texto_nao_escaneado(pdf_curto):
         p = extrair_pagina(pg)
     assert p.tipos == ["texto"]
     assert p.texto == "Fim."
+
+
+def test_primeira_pagina_de_artigo_com_titulo_largo(pdf_artigo_p1):
+    pdf, pg = _pagina(pdf_artigo_p1, 1)
+    with pdf:
+        p = extrair_pagina(pg)
+    assert p.tipos == ["coluna-dupla"]
+    t = p.texto
+    linha1 = "Um estudo longo sobre a associacao entre variaveis categoricas em amostras pequenas"
+    linha2 = "e a sua aplicacao em pesquisas de saude publica no Brasil contemporaneo e rural"
+    assert linha1 in t and linha2 in t
+    assert t.index(linha1) < t.index(linha2) < t.index("Esq linha um.")
+    assert t.index("Esq linha seis bem-") < t.index("dois Dir linha um.")
+    assert t.index("Esq linha seis") < t.index("Dir linha um.") < t.index("Dir linha seis.")
+    assert "Esq linha um. dois Dir linha um." not in t
+    assert "bemdois" not in t

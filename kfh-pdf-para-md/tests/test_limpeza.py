@@ -46,3 +46,13 @@ def test_nome_seguro_substitui_pipe_e_seta():
 def test_marcador_tem_formato_do_contrato():
     assert marcador("artigo.pdf", 7) == "<!-- artigo.pdf | p. 7 -->"
     assert marcador("a|b.pdf", 1) == "<!-- a_b.pdf | p. 1 -->"
+
+
+def test_junta_hifen_com_vocabulario_quando_forma_junta_existe():
+    assert juntar_hifenizacao("estatís-\ntica aplicada", {"estatística"}) == "estatística aplicada"
+    assert limpar_texto("estatís-\ntica", {"estatística"}) == "estatística"
+
+
+def test_nao_junta_composto_sem_evidencia_no_vocabulario():
+    assert juntar_hifenizacao("bem-\nestar", {"outra"}) == "bem-\nestar"
+    assert limpar_texto("qui-\nquadrado", set()) == "qui-\nquadrado"

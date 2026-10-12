@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import os
 import re
 import sys
 import tempfile
@@ -30,18 +31,29 @@ MIN_LADO = 0.20  # fração mínima de palavras em cada lado da calha
 
 # ---------- funções puras ----------
 
-def juntar_hifenizacao(texto: str) -> str:
-    """Junta 'palavra-\\nresto' em 'palavraresto' só quando o próximo caractere é letra minúscula."""
+def juntar_hifenizacao(texto: str, vocabulario: set[str] | None = None) -> str:
+    """Junta 'palavra-\\nresto' em 'palavraresto'.
 
-    def _junta(m: re.Match) -> str:
-        return m.group(1) + m.group(2) if m.group(2).islower() else m.group(0)
+    Sem vocabulário: junta quando o próximo caractere é letra minúscula.
+    Com vocabulário (palavras minúsculas do documento): junta só quando a forma junta está nele;
+    caso contrário (ex.: 'qui-quadrado') deixa hífen e quebra como extraídos.
+    """
+    if vocabulario is None:
+        def _junta(m: re.Match) -> str:
+            return m.group(1) + m.group(2) if m.group(2).islower() else m.group(0)
 
-    return re.sub(r"(\w)-\n(\w)", _junta, texto)
+        return re.sub(r"(\w)-\n(\w)", _junta, texto)
+
+    def _junta_voc(m: re.Match) -> str:
+        junta = m.group(1) + m.group(2)
+        return junta if junta.lower() in vocabulario else m.group(0)
+
+    return re.sub(r"(\w+)-\n(\w+)", _junta_voc, texto)
 
 
-def limpar_texto(texto: str) -> str:
+def limpar_texto(texto: str, vocabulario: set[str] | None = None) -> str:
     """Espaços múltiplos -> um; linhas vazias repetidas -> uma; hifenização de quebra juntada."""
-    texto = juntar_hifenizacao(texto)
+    texto = juntar_hifenizacao(texto, vocabulario)
     saida: list[str] = []
     vazia_antes = False
     for linha in texto.splitlines():
@@ -90,14 +102,55 @@ class Pagina:
         return "escaneado" not in self.tipos
 
 
+GAP_SEGMENTO = 10  # vão (pt) que separa segmentos de uma mesma linha
+LARGA = 0.60  # linha com mais de 60% da largura da página é "larga" (título, resumo)
+
+
+def linhas_largas(page) -> list[dict]:
+    """Segmentos de linha mais largos que LARGA da página, em ordem de leitura.
+
+    Agrupa palavras por altura (tolerância de 3pt) e quebra a linha onde há vão maior que
+    GAP_SEGMENTO (uma calha): duas colunas lado a lado não formam uma linha larga.
+    """
+    palavras = sorted(page.extract_words(), key=lambda w: (w["top"], w["x0"]))
+    grupos: list[list[dict]] = []
+    for w in palavras:
+        if grupos and abs(w["top"] - grupos[-1][0]["top"]) <= 3:
+            grupos[-1].append(w)
+        else:
+            grupos.append([w])
+    limite = LARGA * float(page.width)
+    saida: list[dict] = []
+    for g in grupos:
+        g.sort(key=lambda w: w["x0"])
+        segmentos: list[list[dict]] = [[g[0]]]
+        for w in g[1:]:
+            if w["x0"] - segmentos[-1][-1]["x1"] > GAP_SEGMENTO:
+                segmentos.append([w])
+            else:
+                segmentos[-1].append(w)
+        for seg in segmentos:
+            x0, x1 = seg[0]["x0"], seg[-1]["x1"]
+            if x1 - x0 > limite:
+                saida.append({"x0": x0, "x1": x1, "top": min(w["top"] for w in seg),
+                              "bottom": max(w["bottom"] for w in seg), "text": " ".join(w["text"] for w in seg)})
+    return sorted(saida, key=lambda l: l["top"])
+
+
+def _em_linha(w: dict, l: dict) -> bool:
+    return w["x0"] >= l["x0"] - 1 and w["x1"] <= l["x1"] + 1 and w["top"] >= l["top"] - 1 and w["bottom"] <= l["bottom"] + 1
+
+
 def detectar_colunas(page) -> float | None:
     """Devolve o x do meio da calha entre duas colunas, ou None.
 
     Divide a página em FAIXAS faixas verticais e conta quantas palavras cruzam cada faixa.
     Calha = faixa entre 35% e 65% da largura cruzada por menos de LIMIAR_CALHA das palavras,
-    com pelo menos MIN_LADO das palavras de cada lado.
+    com pelo menos MIN_LADO das palavras de cada lado. Palavras de linhas largas (título,
+    resumo) ficam fora da contagem.
     """
-    palavras = page.extract_words()
+    largas = linhas_largas(page)
+    palavras = [w for w in page.extract_words() if not any(_em_linha(w, l) for l in largas)]
     if len(palavras) < 10:
         return None
     x_min = float(page.bbox[0])
@@ -122,7 +175,7 @@ def detectar_colunas(page) -> float | None:
     return None
 
 
-def extrair_pagina(page) -> Pagina:
+def extrair_pagina(page, vocabulario: set[str] | None = None) -> Pagina:
     n = page.page_number
     bruto = (page.extract_text() or "").strip()
     if len(bruto) < MIN_CHARS_TEXTO:
@@ -145,16 +198,24 @@ def extrair_pagina(page) -> Pagina:
     x_calha = detectar_colunas(corpo)
     if x_calha is not None:
         tipos.append("coluna-dupla")
-        x0, top, x1, bottom = corpo.bbox
-        esq = corpo.crop((x0, top, x_calha, bottom)).extract_text() or ""
-        dir_ = corpo.crop((x_calha, top, x1, bottom)).extract_text() or ""
-        texto = esq.rstrip() + "\n" + dir_.lstrip()
+        largas = linhas_largas(corpo)
+        resto = corpo
+        for l in largas:
+            resto = resto.outside_bbox((l["x0"], l["top"], l["x1"], l["bottom"]))
+        x0, top, x1, bottom = resto.bbox
+        blocos = [
+            "\n".join(l["text"] for l in largas),
+            resto.crop((x0, top, x_calha, bottom)).extract_text() or "",
+            resto.crop((x_calha, top, x1, bottom)).extract_text() or "",
+        ]
+        # cada bloco é limpo à parte: hífen no fim de uma coluna não se junta à outra
+        texto = "\n".join(b for b in (limpar_texto(b, vocabulario) for b in blocos) if b)
     else:
-        texto = corpo.extract_text() or ""
+        texto = limpar_texto(corpo.extract_text() or "", vocabulario)
 
     if not tipos:
         tipos.append("texto")
-    return Pagina(n, tipos, limpar_texto(texto), tabelas_md)
+    return Pagina(n, tipos, texto, tabelas_md)
 
 
 # ---------- cabeçalho e rodapé repetidos ----------
@@ -303,7 +364,11 @@ class Resumo:
 
 def processar_pdf(caminho: Path, saida_dir: Path, sobrescrever: bool) -> Resumo:
     destino = saida_dir / (caminho.stem + ".md")
-    if destino.exists() and not sobrescrever:
+    destino_real, saida_real = destino, saida_dir
+    if os.name == "nt" and len(str(destino.absolute())) >= 250:
+        saida_real = Path("\\\\?\\" + str(saida_dir.absolute()))  # prefixo de caminho longo
+        destino_real = saida_real / destino.name
+    if destino_real.exists() and not sobrescrever:
         return Resumo(caminho.name, destino, 0, "-", [], ["já existia; pulado (use --sobrescrever)"])
     try:
         pdf, tmp = abrir_pdf(caminho)
@@ -312,7 +377,10 @@ def processar_pdf(caminho: Path, saida_dir: Path, sobrescrever: bool) -> Resumo:
         return Resumo(caminho.name, None, 0, "-", [], [], erro=f"não extraído: {motivo}")
     try:
         with pdf:
-            paginas = [extrair_pagina(pg) for pg in pdf.pages]
+            vocabulario: set[str] = set()
+            for pg in pdf.pages:
+                vocabulario.update(re.findall(r"\w+", (pg.extract_text() or "").lower()))
+            paginas = [extrair_pagina(pg, vocabulario) for pg in pdf.pages]
     except Exception as e:
         return Resumo(caminho.name, None, 0, "-", [], [], erro=f"não extraído: falha ao ler páginas ({type(e).__name__})")
     finally:
@@ -323,11 +391,13 @@ def processar_pdf(caminho: Path, saida_dir: Path, sobrescrever: bool) -> Resumo:
     removidos = remover_repetidos(paginas, detectar_repetidos(paginas))
     nao = [p.numero for p in paginas if not p.extraida]
     try:
-        saida_dir.mkdir(parents=True, exist_ok=True)
-        destino.write_text(montar_md(caminho, paginas, removidos), encoding="utf-8")
+        saida_real.mkdir(parents=True, exist_ok=True)
+        destino_real.write_text(montar_md(caminho, paginas, removidos), encoding="utf-8")
     except OSError as e:
+        n_car = len(str(destino.absolute()))
+        extra = f"caminho com {n_car} caracteres; o Windows limita a 260, use --saida com pasta curta" if n_car >= 250 else type(e).__name__
         return Resumo(caminho.name, None, len(paginas), tipo_arquivo(paginas), nao, [],
-                      erro=f"não extraído: não foi possível gravar em {destino.as_posix()} ({type(e).__name__})")
+                      erro=f"não extraído: não foi possível gravar em {destino.as_posix()} ({extra})")
     observacoes = [f"removido: {r}" for r in removidos]
     return Resumo(caminho.name, destino, len(paginas), tipo_arquivo(paginas), nao, observacoes)
 
