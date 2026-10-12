@@ -74,3 +74,84 @@ def nome_seguro(nome: str) -> str:
 
 def marcador(nome: str, n: int) -> str:
     return f"<!-- {nome_seguro(nome)} | p. {n} -->"
+
+
+# ---------- página ----------
+
+@dataclass
+class Pagina:
+    numero: int
+    tipos: list[str]
+    texto: str
+    tabelas: list[str] = field(default_factory=list)
+
+    @property
+    def extraida(self) -> bool:
+        return "escaneado" not in self.tipos
+
+
+def detectar_colunas(page) -> float | None:
+    """Devolve o x do meio da calha entre duas colunas, ou None.
+
+    Divide a página em FAIXAS faixas verticais e conta quantas palavras cruzam cada faixa.
+    Calha = faixa entre 35% e 65% da largura cruzada por menos de LIMIAR_CALHA das palavras,
+    com pelo menos MIN_LADO das palavras de cada lado.
+    """
+    palavras = page.extract_words()
+    if len(palavras) < 10:
+        return None
+    x_min = float(page.bbox[0])
+    largura = float(page.width)
+    cruzam = [0] * FAIXAS
+
+    def faixa(x: float) -> int:
+        return min(max(int((x - x_min) / largura * FAIXAS), 0), FAIXAS - 1)
+
+    for w in palavras:
+        for i in range(faixa(w["x0"]), faixa(w["x1"]) + 1):
+            cruzam[i] += 1
+    total = len(palavras)
+    for i in range(int(FAIXAS * 0.35), int(FAIXAS * 0.65) + 1):
+        if cruzam[i] / total >= LIMIAR_CALHA:
+            continue
+        x_calha = x_min + (i + 0.5) * largura / FAIXAS
+        esq = sum(1 for w in palavras if w["x1"] <= x_calha) / total
+        dir_ = sum(1 for w in palavras if w["x0"] >= x_calha) / total
+        if esq >= MIN_LADO and dir_ >= MIN_LADO:
+            return x_calha
+    return None
+
+
+def extrair_pagina(page) -> Pagina:
+    n = page.page_number
+    bruto = (page.extract_text() or "").strip()
+    if len(bruto) < MIN_CHARS_TEXTO:
+        if page.images:
+            return Pagina(n, ["escaneado"], ESCANEADO)
+        if not bruto:
+            return Pagina(n, ["vazia"], VAZIA)
+
+    tipos: list[str] = []
+    tabelas_md: list[str] = []
+    corpo = page
+    for t in page.find_tables():
+        linhas = t.extract()
+        if len(linhas) >= 2 and max(len(l) for l in linhas) >= 2:
+            tabelas_md.append(tabela_para_markdown(linhas))
+            corpo = corpo.outside_bbox(t.bbox)
+    if tabelas_md:
+        tipos.append("tabelas")
+
+    x_calha = detectar_colunas(corpo)
+    if x_calha is not None:
+        tipos.append("coluna-dupla")
+        x0, top, x1, bottom = corpo.bbox
+        esq = corpo.crop((x0, top, x_calha, bottom)).extract_text() or ""
+        dir_ = corpo.crop((x_calha, top, x1, bottom)).extract_text() or ""
+        texto = esq.rstrip() + "\n" + dir_.lstrip()
+    else:
+        texto = corpo.extract_text() or ""
+
+    if not tipos:
+        tipos.append("texto")
+    return Pagina(n, tipos, limpar_texto(texto), tabelas_md)
