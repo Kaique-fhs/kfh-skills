@@ -155,3 +155,66 @@ def extrair_pagina(page) -> Pagina:
     if not tipos:
         tipos.append("texto")
     return Pagina(n, tipos, limpar_texto(texto), tabelas_md)
+
+
+# ---------- cabeçalho e rodapé repetidos ----------
+
+def normalizar_linha(linha: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"\d", "#", linha)).strip().lower()
+
+
+def _paginas_com_texto(paginas: list[Pagina]) -> list[Pagina]:
+    return [p for p in paginas if p.extraida and p.texto != VAZIA]
+
+
+def _indices_de_borda(linhas: list[str]) -> set[int]:
+    nao_vazias = [i for i, l in enumerate(linhas) if l.strip()]
+    return set(nao_vazias[:2] + nao_vazias[-2:])
+
+
+def detectar_repetidos(paginas: list[Pagina]) -> dict[str, str]:
+    """Linhas de borda (2 primeiras + 2 últimas) que aparecem em mais de 50% das páginas (mínimo 3)."""
+    com_texto = _paginas_com_texto(paginas)
+    if len(com_texto) <= 2:
+        return {}
+    contagem: Counter[str] = Counter()
+    originais: dict[str, str] = {}
+    for p in com_texto:
+        linhas = p.texto.splitlines()
+        candidatas = {linhas[i] for i in _indices_de_borda(linhas)}
+        for l in candidatas:
+            if re.fullmatch(r"\d+", l.strip()):
+                continue  # numeração é tratada à parte
+            chave = normalizar_linha(l)
+            contagem[chave] += 1
+            originais.setdefault(chave, l)
+    minimo = max(3, len(com_texto) // 2 + 1)
+    return {k: originais[k] for k, c in contagem.items() if c >= minimo}
+
+
+def remover_repetidos(paginas: list[Pagina], repetidos: dict[str, str]) -> list[str]:
+    """Remove das bordas as linhas repetidas e a numeração de página. Devolve o que removeu."""
+    com_texto = _paginas_com_texto(paginas)
+    if len(com_texto) <= 2:
+        return []
+    removidos: list[str] = []
+    numeracao = False
+    for p in com_texto:
+        linhas = p.texto.splitlines()
+        bordas = _indices_de_borda(linhas)
+        novas: list[str] = []
+        for i, l in enumerate(linhas):
+            if i in bordas:
+                if re.fullmatch(r"\d+", l.strip()):
+                    numeracao = True
+                    continue
+                chave = normalizar_linha(l)
+                if chave in repetidos:
+                    if repetidos[chave] not in removidos:
+                        removidos.append(repetidos[chave])
+                    continue
+            novas.append(l)
+        p.texto = "\n".join(novas).strip()
+    if numeracao:
+        removidos.append("numeração de página")
+    return removidos
