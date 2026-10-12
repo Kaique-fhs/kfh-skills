@@ -125,3 +125,30 @@ def test_main_com_saida_explicita(pdf_texto, tmp_path):
     destino = tmp_path / "md"
     assert main([str(pdf_texto), "--saida", str(destino)]) == 0
     assert (destino / "texto.md").exists()
+
+
+def test_saida_apontando_para_arquivo_nao_derruba_o_lote(pdf_texto, tmp_path, capsys):
+    arquivo = tmp_path / "arquivo.txt"
+    arquivo.write_text("x", encoding="utf-8")
+    codigo = main([str(pdf_texto), "--saida", str(arquivo)])
+    saida = capsys.readouterr()
+    assert codigo == 1
+    assert "não extraído: não foi possível gravar" in saida.out
+    assert "erro: texto.pdf:" in saida.err
+    assert "Traceback" not in saida.err
+
+
+def test_abrir_pdf_fallback_falho_nao_deixa_temporario(pdf_texto, monkeypatch):
+    import tempfile
+
+    import extrair_pdf
+
+    def levanta(*a, **k):
+        raise RuntimeError("x")
+
+    antes = {p.name for p in Path(tempfile.gettempdir()).glob("*.pdf")}
+    monkeypatch.setattr(extrair_pdf.pdfplumber, "open", levanta)
+    with pytest.raises(ValueError, match="invalido"):
+        abrir_pdf(pdf_texto)
+    depois = {p.name for p in Path(tempfile.gettempdir()).glob("*.pdf")}
+    assert depois - antes == set()

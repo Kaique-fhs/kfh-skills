@@ -276,9 +276,14 @@ def abrir_pdf(caminho: Path):
         if leitor.is_encrypted and not leitor.decrypt(""):
             raise ValueError("protegido")
         tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-        PdfWriter(clone_from=leitor).write(tmp)
-        tmp.close()
-        return pdfplumber.open(tmp.name), Path(tmp.name)
+        try:
+            PdfWriter(clone_from=leitor).write(tmp)
+            tmp.close()
+            return pdfplumber.open(tmp.name), Path(tmp.name)
+        except Exception:
+            tmp.close()
+            Path(tmp.name).unlink(missing_ok=True)
+            raise
     except ValueError:
         raise
     except Exception as e:
@@ -308,15 +313,21 @@ def processar_pdf(caminho: Path, saida_dir: Path, sobrescrever: bool) -> Resumo:
     try:
         with pdf:
             paginas = [extrair_pagina(pg) for pg in pdf.pages]
+    except Exception as e:
+        return Resumo(caminho.name, None, 0, "-", [], [], erro=f"não extraído: falha ao ler páginas ({type(e).__name__})")
     finally:
         if tmp is not None:
             tmp.unlink(missing_ok=True)
     if not paginas:
         return Resumo(caminho.name, None, 0, "-", [], [], erro="não extraído: arquivo inválido")
     removidos = remover_repetidos(paginas, detectar_repetidos(paginas))
-    saida_dir.mkdir(parents=True, exist_ok=True)
-    destino.write_text(montar_md(caminho, paginas, removidos), encoding="utf-8")
     nao = [p.numero for p in paginas if not p.extraida]
+    try:
+        saida_dir.mkdir(parents=True, exist_ok=True)
+        destino.write_text(montar_md(caminho, paginas, removidos), encoding="utf-8")
+    except OSError as e:
+        return Resumo(caminho.name, None, len(paginas), tipo_arquivo(paginas), nao, [],
+                      erro=f"não extraído: não foi possível gravar em {destino.as_posix()} ({type(e).__name__})")
     observacoes = [f"removido: {r}" for r in removidos]
     return Resumo(caminho.name, destino, len(paginas), tipo_arquivo(paginas), nao, observacoes)
 
