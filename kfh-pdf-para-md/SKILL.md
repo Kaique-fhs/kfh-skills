@@ -2,7 +2,7 @@
 name: kfh-pdf-para-md
 description: Usar quando o usuário tem um ou mais arquivos PDF e quer o conteúdo em Markdown fiel, com a página de origem de cada trecho, antes de ler, resumir, catalogar ou buscar. Aciona em pedidos como "extrai esse PDF", "converte os PDFs da pasta para md", "passa esse artigo para markdown", "PDF escaneado", "lote de PDFs", "preciso do texto desses artigos". Não faz OCR nem resume.
 allowed-tools: Bash(python ${CLAUDE_SKILL_DIR}/scripts/extrair_pdf.py *) Read Glob
-argument-hint: [caminho do PDF ou da pasta] [--saida DIR]
+argument-hint: "[caminho do PDF ou da pasta] [--saida DIR]"
 ---
 
 # kfh-pdf-para-md
