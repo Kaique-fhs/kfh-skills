@@ -89,7 +89,8 @@ def blocos_por_pagina(md: str) -> dict[int, str]:
     blocos: dict[int, str] = {}
     for i, m in enumerate(marcas):
         fim = marcas[i + 1].start() if i + 1 < len(marcas) else len(md)
-        blocos[int(m.group(2))] = md[m.end():fim]
+        n = int(m.group(2))
+        blocos[n] = blocos.get(n, "") + md[m.end():fim]
     return blocos
 
 
@@ -102,7 +103,7 @@ def resolver_arquivo(nome: str, bases: list[Path]) -> Path | None:
     return p if p.is_file() else None
 
 
-def verificar_registro(r: Registro, bases: list[Path], cache: dict[Path, dict[int, str]]) -> str:
+def verificar_registro(r: Registro, bases: list[Path], cache: dict[Path, dict[int, str] | None]) -> str:
     st = r.status.strip().lower()
     preenchido = any(x.strip() for x in (r.resposta, r.pagina, r.trecho))
     if st in STATUS_NAO_ENCONTRADO:
@@ -115,8 +116,13 @@ def verificar_registro(r: Registro, bases: list[Path], cache: dict[Path, dict[in
     if arq is None:
         return "arquivo não existe"
     if arq not in cache:
-        cache[arq] = blocos_por_pagina(arq.read_text(encoding="utf-8"))
+        try:
+            cache[arq] = blocos_por_pagina(arq.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError):
+            cache[arq] = None
     blocos = cache[arq]
+    if blocos is None:
+        return "arquivo ilegível"
     if not blocos:
         return "arquivo sem marcador"
     if not r.pagina.strip().isdigit() or int(r.pagina) not in blocos:
@@ -177,7 +183,11 @@ def main(argv: list[str] | None = None) -> int:
     if not caminho.is_file():
         print(f"erro: arquivo não existe: {caminho}", file=sys.stderr)
         return 1
-    texto = caminho.read_text(encoding="utf-8")
+    try:
+        texto = caminho.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"erro: não foi possível ler {caminho}: {type(e).__name__}", file=sys.stderr)
+        return 1
     linhas, cabecalho, registros = ler_achados(texto)
     if "status" not in cabecalho:
         print("erro: tabela sem coluna 'status'", file=sys.stderr)
@@ -191,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     if m:
         bases.append(Path(m.group(1).strip()))
 
-    cache: dict[Path, dict[int, str]] = {}
+    cache: dict[Path, dict[int, str] | None] = {}
     resultados = [verificar_registro(r, bases, cache) for r in registros]
 
     print("| # | campo | arquivo | página | resultado |")

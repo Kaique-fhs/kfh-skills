@@ -87,3 +87,25 @@ def test_tudo_ok_devolve_zero(tmp_path):
     assert main([str(tmp_path / "achados.md"), "--marcar"]) == 0
     texto = (tmp_path / "achados.md").read_text(encoding="utf-8")
     assert texto.startswith("---\nverificado: ")  # frontmatter criado quando não existia
+
+
+def test_arquivo_ilegivel_devolve_resultado_por_linha(pasta):
+    from verificar_citacoes import Registro
+
+    (pasta / "ruim.md").write_bytes(b"<!-- ruim.pdf | p. 1 -->\n\xff\xfe texto")
+    r = Registro("c", "r", "ruim.md", "1", '"texto"', "encontrado", 0)
+    assert verificar_registro(r, [pasta], {}) == "arquivo ilegível"
+
+
+def test_main_achados_ilegivel_retorna_1_sem_traceback(tmp_path, capsys):
+    (tmp_path / "achados.md").write_bytes(b"| campo | status |\n\xff\xfe\n")
+    assert main([str(tmp_path / "achados.md")]) == 1
+    assert "não foi possível ler" in capsys.readouterr().err
+
+
+def test_marcador_duplicado_soma_blocos():
+    blocos = blocos_por_pagina(
+        "<!-- a.pdf | p. 1 -->\nPrimeira parte.\n<!-- a.pdf | p. 2 -->\nOutra.\n<!-- a.pdf | p. 1 -->\nSegunda parte.\n"
+    )
+    assert "Primeira parte." in blocos[1]
+    assert "Segunda parte." in blocos[1]
