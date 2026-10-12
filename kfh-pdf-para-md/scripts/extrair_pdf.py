@@ -218,3 +218,169 @@ def remover_repetidos(paginas: list[Pagina], repetidos: dict[str, str]) -> list[
     if numeracao:
         removidos.append("numeração de página")
     return removidos
+
+
+# ---------- arquivo ----------
+
+def tipo_arquivo(paginas: list[Pagina]) -> str:
+    tipos = {"+".join(p.tipos) for p in paginas if "vazia" not in p.tipos}
+    if not tipos:
+        return "vazia"
+    return tipos.pop() if len(tipos) == 1 else "misto"
+
+
+def montar_md(caminho: Path, paginas: list[Pagina], removidos: list[str]) -> str:
+    nome = caminho.name
+    nao = [p.numero for p in paginas if not p.extraida]
+    tipos_pg = ", ".join(f"{p.numero}: {'+'.join(p.tipos)}" for p in paginas)
+    rem = ", ".join('"' + r.replace('"', "'") + '"' for r in removidos)
+    front = [
+        "---",
+        f"fonte: {nome}",
+        f"caminho: {caminho.absolute().as_posix()}",  # absolute(), não resolve(): nome com '|' quebra resolve() no Windows
+        f"paginas: {len(paginas)}",
+        f"extraido_em: {dt.datetime.now().isoformat(timespec='seconds')}",
+        f"ferramenta: kfh-pdf-para-md (pdfplumber {pdfplumber.__version__})",
+        f"tipo_detectado: {tipo_arquivo(paginas)}",
+        f"tipos_por_pagina: {{{tipos_pg}}}",
+        f"paginas_nao_extraidas: [{', '.join(map(str, nao))}]",
+        f"removido_repetido: [{rem}]",
+        "---",
+        "",
+    ]
+    corpo: list[str] = []
+    for p in paginas:
+        corpo.append(marcador(nome, p.numero))
+        corpo.append(p.texto)
+        for k, t in enumerate(p.tabelas, start=1):
+            corpo.append("")
+            corpo.append(f"<!-- tabela {k} -->")
+            corpo.append(t)
+        corpo.append("")
+    return "\n".join(front + corpo).rstrip() + "\n"
+
+
+def abrir_pdf(caminho: Path):
+    """Abre com pdfplumber; se falhar, tenta desbloquear com pypdf e senha vazia.
+
+    Devolve (pdf, caminho_temporario_ou_None). Lança ValueError("protegido") ou ValueError("invalido").
+    """
+    try:
+        return pdfplumber.open(str(caminho)), None
+    except Exception:
+        pass
+    try:
+        from pypdf import PdfReader, PdfWriter
+
+        leitor = PdfReader(str(caminho))
+        if leitor.is_encrypted and not leitor.decrypt(""):
+            raise ValueError("protegido")
+        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        PdfWriter(clone_from=leitor).write(tmp)
+        tmp.close()
+        return pdfplumber.open(tmp.name), Path(tmp.name)
+    except ValueError:
+        raise
+    except Exception as e:
+        raise ValueError("invalido") from e
+
+
+@dataclass
+class Resumo:
+    fonte: str
+    saida: Path | None
+    paginas: int
+    tipo: str
+    nao_extraidas: list[int]
+    observacoes: list[str]
+    erro: str | None = None
+
+
+def processar_pdf(caminho: Path, saida_dir: Path, sobrescrever: bool) -> Resumo:
+    destino = saida_dir / (caminho.stem + ".md")
+    if destino.exists() and not sobrescrever:
+        return Resumo(caminho.name, destino, 0, "-", [], ["já existia; pulado (use --sobrescrever)"])
+    try:
+        pdf, tmp = abrir_pdf(caminho)
+    except ValueError as e:
+        motivo = "protegido" if str(e) == "protegido" else "arquivo inválido"
+        return Resumo(caminho.name, None, 0, "-", [], [], erro=f"não extraído: {motivo}")
+    try:
+        with pdf:
+            paginas = [extrair_pagina(pg) for pg in pdf.pages]
+    finally:
+        if tmp is not None:
+            tmp.unlink(missing_ok=True)
+    if not paginas:
+        return Resumo(caminho.name, None, 0, "-", [], [], erro="não extraído: arquivo inválido")
+    removidos = remover_repetidos(paginas, detectar_repetidos(paginas))
+    saida_dir.mkdir(parents=True, exist_ok=True)
+    destino.write_text(montar_md(caminho, paginas, removidos), encoding="utf-8")
+    nao = [p.numero for p in paginas if not p.extraida]
+    observacoes = [f"removido: {r}" for r in removidos]
+    return Resumo(caminho.name, destino, len(paginas), tipo_arquivo(paginas), nao, observacoes)
+
+
+# ---------- CLI ----------
+
+def coletar_pdfs(entradas: list[str]) -> tuple[list[Path], list[str]]:
+    pdfs: list[Path] = []
+    mensagens: list[str] = []
+    for e in entradas:
+        p = Path(e)
+        if p.is_dir():
+            achados = sorted(q for q in p.iterdir() if q.suffix.lower() == ".pdf")
+            if not achados:
+                mensagens.append(f"aviso: pasta sem PDF: {p}")
+            pdfs.extend(achados)
+        elif p.is_file():
+            pdfs.append(p)
+        else:
+            mensagens.append(f"erro: caminho não existe: {p}")
+    return pdfs, mensagens
+
+
+def resumo_markdown(resumos: list[Resumo]) -> str:
+    linhas = [
+        "| arquivo | páginas | tipo | não extraídas | saída | observações |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in resumos:
+        obs = r.erro if r.erro else ("; ".join(r.observacoes) or "-")
+        nao = ", ".join(map(str, r.nao_extraidas)) or "-"
+        saida = r.saida.as_posix() if r.saida else "-"
+        linhas.append(f"| {r.fonte} | {r.paginas} | {r.tipo} | {nao} | {saida} | {obs} |")
+    return "\n".join(linhas)
+
+
+def main(argv: list[str] | None = None) -> int:
+    for fluxo in (sys.stdout, sys.stderr):
+        try:
+            fluxo.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass  # stdout substituído (pytest capsys) ou sem suporte
+    ap = argparse.ArgumentParser(description="Extrai PDFs para Markdown fiel, com marcador de página. Não faz OCR.")
+    ap.add_argument("entradas", nargs="+", help="arquivos .pdf ou pastas (sem recursão)")
+    ap.add_argument("--saida", help="pasta de saída (padrão: <pasta do PDF>/extraido/)")
+    ap.add_argument("--sobrescrever", action="store_true", help="regrava .md que já existe")
+    args = ap.parse_args(argv)
+
+    pdfs, mensagens = coletar_pdfs(args.entradas)
+    codigo = 1 if any(m.startswith("erro") for m in mensagens) else 0
+    for m in mensagens:
+        print(m, file=sys.stderr)
+
+    resumos: list[Resumo] = []
+    for pdf in pdfs:
+        saida_dir = Path(args.saida) if args.saida else pdf.parent / "extraido"
+        r = processar_pdf(pdf, saida_dir, args.sobrescrever)
+        if r.erro:
+            codigo = 1
+            print(f"erro: {r.fonte}: {r.erro}", file=sys.stderr)
+        resumos.append(r)
+    print(resumo_markdown(resumos))
+    return codigo
+
+
+if __name__ == "__main__":
+    sys.exit(main())
