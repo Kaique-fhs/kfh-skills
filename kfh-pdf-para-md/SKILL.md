@@ -38,6 +38,7 @@ Se o pedido for "extrai e resume", extraia com esta skill e trate o resumo como 
    ```bash
    python ${CLAUDE_SKILL_DIR}/scripts/extrair_pdf.py <pdf ou pasta> [outros...] [--saida DIR] [--sobrescrever]
    ```
+   - No app claude.ai (skill enviada por zip) a variável ${CLAUDE_SKILL_DIR} não existe: o script é `scripts/extrair_pdf.py` dentro da pasta desta skill; use esse caminho relativo.
    - Código 0: todos os PDFs abriram. Código 1: algum não abriu (protegido, corrompido, caminho errado); o `stderr` diz qual. Continue com os que abriram e relate os outros.
    - Página não extraída (escaneada) **não** é erro: o script segue e marca.
    - `.md` que já existe é pulado; só regrave com `--sobrescrever` se o usuário pediu.

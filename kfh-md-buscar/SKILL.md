@@ -33,6 +33,7 @@ A tabela vai ser usada como se fosse o PDF. **Uma citação que não confere é 
    ```bash
    python ${CLAUDE_SKILL_DIR}/scripts/verificar_citacoes.py <pasta>/achados.md --marcar
    ```
+   - No app claude.ai (skill enviada por zip) a variável ${CLAUDE_SKILL_DIR} não existe: o script é `scripts/verificar_citacoes.py` dentro da pasta desta skill; use esse caminho relativo.
    Linha marcada `❌ citação não confere`: recopie o trecho da página certa e devolva o status correto, ou mude para `não encontrado` esvaziando resposta, página e trecho. Rode de novo até `0 falha(s)`.
 8. **Entregue:** caminho do `achados.md`, contagem por status, e a lista do que ficou `não encontrado` ou `conflitante` para o usuário decidir.
 
