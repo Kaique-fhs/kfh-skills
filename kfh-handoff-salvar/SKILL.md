@@ -79,6 +79,7 @@ Só comece após o usuário confirmar o rascunho de forma explícita ("ok", "pod
 4. Garanta o `~/.claude/CLAUDE.md` conforme o item 6.
 5. Commit, se há git: `git add -A` e `git commit -m "WIP: <tema> (handoff)"`. Sem o prefixo `WIP:` só se o usuário disser que o código está estável. O arquivo global fica fora do repositório e não entra no commit. Sem git: avise que não houve commit.
 6. Reporte: caminho do handoff, o que aconteceu com a pasta, com cada `CLAUDE.md` e com o commit (hash), e o que ficou em "Pendente de registro permanente".
+7. **Sem git e sem `~/.claude` (app claude.ai):** os arquivos gravados podem ser descartados com o chat. No reporte, mostre o conteúdo completo do handoff num bloco de código e diga ao usuário para baixar o arquivo ou anexá-lo ao próximo chat, onde a `kfh-handoff-continuar` o aceita mesmo sem `CLAUDE.md`.
 
 ### Seção do CLAUDE.md do projeto
 
@@ -144,3 +145,4 @@ Use exatamente este bloco em `~/.claude/CLAUDE.md`, precedido de uma linha em br
 | Estado tirado da memória da conversa | `git status` e testes rodados antes do rascunho |
 | Reescrever o `CLAUDE.md` ou apagar linha de outra tarefa | Só acrescentar a linha desta tarefa |
 | Parar porque não há `~/.claude` | Avisar em uma linha e seguir |
+| Sem git: gravar, relatar o caminho e encerrar | Mostrar o handoff inteiro no chat e pedir para baixar ou anexar |

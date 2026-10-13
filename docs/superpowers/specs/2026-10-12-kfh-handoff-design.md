@@ -221,7 +221,9 @@ Divergência é informação, não erro: o relato mostra a diferença e propõe 
 
 ## 9. Ambiente app claude.ai
 
-As skills são enviadas por zip (`empacotar.py`). Nesse ambiente não há `~/.claude` nem, em geral, git. Comportamento: bloco global pulado com aviso; commit pulado com aviso; o restante igual. Caminhos para `references/` são relativos à pasta da skill, como a nota já presente na `kfh-md-buscar`.
+As skills são enviadas por zip (`empacotar.py`). Nesse ambiente não há `~/.claude` nem, em geral, git, e os arquivos gravados podem ser descartados com o chat. Comportamento: bloco global pulado com aviso; commit pulado com aviso; a `salvar` mostra o handoff completo no chat e pede para baixar ou anexar ao próximo chat; a `continuar` aceita um handoff anexado ou apontado mesmo sem seção no `CLAUDE.md`, e o registra no projeto antes de seguir. Caminhos para `references/` são relativos à pasta da skill, como a nota já presente na `kfh-md-buscar`.
+
+Acrescentado após a revisão final (12/10/2026): na `continuar`, a âncora dos commits "depois do handoff" é o último commit que tocou o arquivo do handoff, não a data do cabeçalho; "pronta" é definida como próximo passo feito, "Pela metade" e "Falta" vazios e verificação mostrada; código da tarefa não commitado recebe commit próprio antes do commit de encerramento, e o bloco de confirmação mostra isso.
 
 ## 10. Verificação antes de entregar
 
