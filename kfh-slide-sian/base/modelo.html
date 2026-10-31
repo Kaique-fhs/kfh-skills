@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Título da apresentação</title>
+<style>
+/* ===========================================
+   FONTE: Supreme (marca SIAN), embutida em base64
+   para funcionar sem internet
+   =========================================== */
+@font-face { font-family: "Supreme"; src: url({{FONTE_SUPREME}}) format("woff2"); font-weight: 100 800; font-style: normal; }
+
+/* ===========================================
+   TEMA: cores oficiais da SIAN (manual p. 21)
+   Única parte do arquivo com cor literal; o resto usa var(--...)
+   =========================================== */
+:root {
+  --azul: #24286E;          /* Azul Naval: confiança */
+  --laranja: #FF6934;       /* Laranja Elétrico: imaginativo */
+  --cinza-escuro: #94958B;  /* Cinza Escuro: entusiasmado */
+  --cinza-claro: #C7C3BD;   /* Cinza Claro: profissional */
+  --branco: #FFFFFF;
+
+  /* Variações das cores oficiais (mesmos RGB, com transparência) */
+  --fundo-cartao: rgba(199,195,189,.18);
+  --divisor: rgba(199,195,189,.46);
+  --branco-18: rgba(255,255,255,.18);
+  --branco-55: rgba(255,255,255,.55);
+  --laranja-16: rgba(255,105,52,.16);
+  --laranja-60: rgba(255,105,52,.6);
+  --azul-07: rgba(36,40,110,.07);
+  --azul-20: rgba(36,40,110,.20);
+  --azul-85: rgba(36,40,110,.85);
+
+  --stage-bg: var(--azul);   /* faixa fora do slide (telas 16:10) */
+  --slide-bg: var(--branco);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 0.8s;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* {{VIEWPORT_BASE}} */
+
+body { font-family: "Supreme", sans-serif; color: var(--azul); }
+
+/* ===========================================
+   ANIMAÇÕES DE ENTRADA
+   .reveal sobe e aparece quando o slide fica .visible;
+   o atraso vem do style="--d: ..." em cada elemento
+   =========================================== */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity var(--dur) var(--ease-out-expo), transform var(--dur) var(--ease-out-expo); transition-delay: var(--d, 0s); }
+.reveal.da-esquerda { transform: translateX(-70px); }
+.reveal.da-direita { transform: translateX(70px); }
+.reveal.cresce { transform: scale(.6); }
+.reveal.fixo { transition: none; }
+/* Sem data-passo: entra junto com o slide.
+   Com data-passo="n": entra no n-ésimo clique/seta (JS põe .mostrar) */
+.slide.visible .reveal:not([data-passo]),
+.slide.visible [data-passo].mostrar,
+body.editando .slide.visible [data-passo] { opacity: 1; transform: none; }
+
+/* Barras e linhas que "crescem" da esquerda */
+.estica { transform: scaleX(0); transform-origin: left center; transition: transform 1.1s var(--ease-out-expo); transition-delay: var(--d, 0s); }
+.slide.visible .estica.mostrar,
+body.editando .slide.visible .estica { transform: scaleX(1); }
+
+@media print {
+  .reveal, .estica { opacity: 1 !important; transform: none !important; }
+}
+
+/* ===========================================
+   ELEMENTOS COMUNS: logo, grafismo, cabeçalho, número
+   =========================================== */
+.logo { position: absolute; top: 56px; right: 80px; height: 78px; }
+/* Grafismo da marca: sempre no canto inferior ESQUERDO */
+.canto { position: absolute; left: 0; bottom: 0; width: 300px; }
+.cab { position: absolute; top: 64px; left: 110px; right: 420px; }
+.kicker { font-size: 26px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--laranja); }
+h1 { font-size: 76px; font-weight: 800; line-height: 1.05; margin-top: 12px; letter-spacing: -.01em; }
+.num { position: absolute; bottom: 44px; right: 110px; font-size: 22px; font-weight: 600; color: var(--cinza-escuro); font-variant-numeric: tabular-nums; }
+.num b { color: var(--laranja); font-weight: 800; }
+
+/* Área de conteúdo do slide comum: os blocos entram aqui, empilhados */
+.corpo { position: absolute; top: 230px; left: 110px; right: 110px; bottom: 150px; display: flex; flex-direction: column; gap: 40px; }
+.nota { position: absolute; bottom: 70px; left: 360px; right: 300px; font-size: 20px; color: var(--cinza-escuro); line-height: 1.4; }
+
+/* Listas com bolinha laranja da marca (linhas digitadas com "-" viram itens) */
+.marcadores { list-style: none; }
+.marcadores li { font-size: 30px; line-height: 1.32; padding-left: 34px; position: relative; margin-top: 14px; }
+.marcadores li::before { content: ""; position: absolute; left: 0; top: 13px; width: 14px; height: 14px; border-radius: 50%; background: var(--laranja); }
+
+/* Categorias de cor (legenda de barras, cartões, séries) */
+.cat-1 { background: var(--azul); color: var(--branco); }
+.cat-2 { background: var(--laranja); color: var(--branco); }
+.cat-3 { background: var(--cinza-escuro); color: var(--branco); }
+.cat-4 { background: var(--cinza-claro); color: var(--azul); }
+.cat-5 { background: repeating-linear-gradient(-45deg, var(--azul-20) 0 10px, var(--azul-07) 10px 20px); color: var(--azul); }
+
+/* ===========================================
+   CAPA
+   Esquerda branca com logo e título; direita em painel azul com o roteiro
+   (padrão do manual: painel azul, títulos em laranja, texto em branco)
+   =========================================== */
+.capa-logo { position: absolute; top: 90px; left: 110px; height: 150px; }
+.capa-texto { position: absolute; top: 400px; left: 110px; width: 1000px; }
+.capa-titulo { font-size: 112px; font-weight: 800; line-height: 1.02; letter-spacing: -.015em; margin-top: 18px; }
+.capa-sub { font-size: 30px; line-height: 1.4; color: var(--cinza-escuro); margin-top: 30px; max-width: 860px; }
+.capa-painel, .enc-painel { position: absolute; top: 0; right: 0; bottom: 0; background: var(--azul); color: var(--branco); }
+.capa-painel::before, .enc-painel::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: var(--laranja); }
+.capa-painel { width: 640px; padding: 150px 80px 0 80px; }
+.capa-rot { font-size: 22px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--laranja); margin-bottom: 26px; }
+.capa-roteiro { list-style: none; }
+.capa-roteiro li { display: flex; align-items: baseline; gap: 24px; font-size: 30px; font-weight: 600; padding: 18px 0; border-bottom: 2px solid var(--branco-18); }
+.capa-roteiro li b { font-size: 26px; font-weight: 800; color: var(--laranja); font-variant-numeric: tabular-nums; }
+
+/* ===========================================
+   ENCERRAMENTO
+   Painel azul em 2/3 da largura, à direita, com a frase de fecho
+   em laranja e o contato em branco; logo na área branca
+   =========================================== */
+.enc-logo { position: absolute; top: 90px; left: 110px; height: 150px; }
+.enc-painel { width: 1280px; padding: 0 120px 0 130px; display: flex; flex-direction: column; justify-content: center; }
+.enc-titulo { font-size: 104px; font-weight: 800; line-height: 1.05; letter-spacing: -.015em; color: var(--laranja); }
+.enc-sub { font-size: 36px; line-height: 1.4; color: var(--branco); margin-top: 40px; }
+
+/* ===========================================
+   CHROME: barra de progresso (no topo do slide) e dica
+   =========================================== */
+/* Fica dentro do palco: acompanha o topo do slide, não o da tela */
+.progresso { position: absolute; top: 0; left: 0; height: 6px; background: var(--laranja); z-index: 5; transition: width .5s var(--ease-out-expo); }
+.deck-controls { color: var(--branco-55); font: 13px "Supreme", sans-serif; letter-spacing: .04em; transition: opacity .6s; pointer-events: none; }
+.deck-controls.some { opacity: 0; }
+/* Botão de tela cheia: aparece quando o mouse mexe e some depois de 2,5s parado */
+.tela-cheia { position: fixed; right: 18px; bottom: 18px; z-index: 1001; width: 48px; height: 48px; border-radius: 50%; border: none; background: var(--azul-85); color: var(--branco); cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .4s, background .2s; }
+.tela-cheia.show { opacity: 1; pointer-events: auto; }
+.tela-cheia:hover { background: var(--laranja); }
+.tela-cheia svg { width: 22px; height: 22px; }
+.tela-cheia .sair { display: none; }
+.tela-cheia.ativa .entrar { display: none; }
+.tela-cheia.ativa .sair { display: block; }
+@media print { .tela-cheia, .progresso { display: none !important; } }
+
+/* ===========================================
+   EDIÇÃO NO NAVEGADOR
+   Tecla E ou canto superior esquerdo liga/desliga;
+   Ctrl+S baixa o HTML com as mudanças
+   =========================================== */
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle { position: fixed; top: 16px; left: 16px; z-index: 10001; width: 48px; height: 48px; border-radius: 50%; border: none; background: var(--laranja); color: var(--branco); font-size: 22px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); outline-offset: 4px; cursor: text; }
+.aviso { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); background: var(--laranja); color: var(--branco); font: 600 15px "Supreme", sans-serif; padding: 8px 18px; border-radius: 20px; z-index: 10002; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.aviso.show { opacity: 1; }
+
+/* O CSS de cada bloco usado entra aqui, acima desta linha */
+</style>
+</head>
+<body>
+<div class="edit-hotzone" id="editHotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Editar textos (E)" aria-label="Editar textos">✎</button>
+<div class="aviso" id="aviso"></div>
+<button class="tela-cheia" id="telaCheia" title="Tela cheia (F)" aria-label="Tela cheia">
+  <svg class="entrar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+  <svg class="sair" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+</button>
+
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+<div class="progresso" id="progresso"></div>
+
+  <!-- CAPA -->
+  <section class="slide capa" aria-label="Capa" data-v="1">
+    <img class="capa-logo reveal" style="--d:.05s" src="{{LOGO_ORIGINAL}}" alt="SIAN">
+    <div class="capa-texto">
+      <div class="kicker reveal" style="--d:.2s">Tema · área · período</div>
+      <h1 class="capa-titulo reveal" style="--d:.3s">Título da apresentação</h1>
+      <p class="capa-sub reveal" style="--d:.45s">Frase curta que resume o assunto e o que o público vai levar</p>
+    </div>
+
+    <div class="capa-painel reveal da-direita" style="--d:.4s">
+      <div class="capa-rot">Nesta apresentação</div>
+      <ol class="capa-roteiro">
+        <li><b>01</b>Seção 1</li>
+        <li><b>02</b>Seção 2</li>
+        <li><b>03</b>Seção 3</li>
+        <li><b>04</b>Seção 4</li>
+      </ol>
+    </div>
+
+    <img class="canto reveal" style="--d:.6s" src="{{CANTO}}" alt="">
+  </section>
+
+  <!-- SLIDE COMUM: logo, cabeçalho, .corpo para os blocos, nota opcional, canto e número -->
+  <section class="slide" aria-label="Seção 1" data-v="1">
+    <img class="logo reveal" style="--d:.05s" src="{{LOGO_ORIGINAL}}" alt="SIAN">
+    <div class="cab">
+      <div class="kicker reveal" style="--d:.1s">Contexto da seção</div>
+      <h1 class="reveal" style="--d:.18s">Título do slide</h1>
+    </div>
+
+    <div class="corpo">
+      <!-- blocos entram aqui -->
+    </div>
+
+    <img class="canto reveal" style="--d:.6s" src="{{CANTO}}" alt="">
+    <div class="num"><b>01</b> / 01</div>
+  </section>
+
+  <!-- ENCERRAMENTO: sem número -->
+  <section class="slide encerramento" aria-label="Encerramento" data-v="1">
+    <img class="enc-logo reveal" style="--d:.05s" src="{{LOGO_ORIGINAL}}" alt="SIAN">
+    <div class="enc-painel reveal da-direita" style="--d:.3s">
+      <h1 class="enc-titulo">Frase de fecho</h1>
+      <p class="enc-sub">Contato ou próximo passo</p>
+    </div>
+    <img class="canto reveal" style="--d:.6s" src="{{CANTO}}" alt="">
+  </section>
+</main>
+</div>
+<div class="deck-controls" id="dica">→ ou clique mostra o próximo item · ← volta · F tela cheia · E editar</div>
+
+<script>
+/* ===========================================
+   CONTROLE DA APRESENTAÇÃO
+   Escala do palco, teclado, roda do mouse, toque,
+   contagem dos números e edição dos textos
+   =========================================== */
+/* Textos editáveis da base; cada bloco usado acrescenta a sua linha em EDITAVEIS_BLOCOS */
+const EDITAVEIS_BASE = '.kicker, h1, .nota, .capa-titulo, .capa-sub, .capa-rot, .capa-roteiro li, .enc-titulo, .enc-sub';
+const EDITAVEIS_BLOCOS = [ /* cole aqui a linha "Editáveis" de cada bloco usado */ ];
+
+class SlidePresentation {
+  constructor() {
+    this.slides = document.querySelectorAll('.slide');
+    this.stage = document.getElementById('deckStage');
+    this.atual = 0;
+    this.editando = false;
+    this.contados = new Set();
+    this.setupStageScale();
+    this.setupKeyboardNav();
+    this.setupWheelNav();
+    this.setupTouchNav();
+    this.setupEditor();
+    this.setupTelaCheia();
+    /* Numeração automática: 01 / 07 etc. (vale também para slides restaurados) */
+    /* Capa e encerramento não têm número: conta só os slides que têm .num */
+    const numerados = [...this.slides].filter((s) => s.querySelector('.num'));
+    numerados.forEach((s, i) => {
+      s.querySelector('.num').innerHTML = '<b>' + String(i + 1).padStart(2, '0') + '</b> / ' + String(numerados.length).padStart(2, '0');
+    });
+    const inicio = (parseInt(location.hash.slice(1), 10) || 1) - 1;
+    /* ?passo=N abre o slide já com N itens à mostra (útil para conferir/capturar) */
+    const passo0 = parseInt(new URLSearchParams(location.search).get('passo'), 10) || 0;
+    this.showSlide(inicio, passo0);
+    setTimeout(() => document.getElementById('dica').classList.add('some'), 4000);
+  }
+
+  /* Escala o palco 1920×1080 inteiro para caber na janela */
+  setupStageScale() {
+    const scale = () => {
+      const f = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      const x = (window.innerWidth - 1920 * f) / 2;
+      const y = (window.innerHeight - 1080 * f) / 2;
+      this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+    };
+    scale();
+    window.addEventListener('resize', scale);
+  }
+
+  setupKeyboardNav() {
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); this.baixar(); return; }
+      if (this.editando) { if (e.key === 'Escape') this.toggleEditMode(); return; }
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); this.avancar(); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); this.voltar(); }
+      else if (e.key === 'Home') this.showSlide(0);
+      else if (e.key === 'End') this.showSlide(this.slides.length - 1);
+      else if (e.key === 'f' || e.key === 'F') this.alternarTelaCheia();
+      else if (e.key === 'e' || e.key === 'E') this.toggleEditMode();
+    });
+  }
+
+  /* Roda do mouse com trava para não pular vários slides */
+  setupWheelNav() {
+    let trava = false;
+    window.addEventListener('wheel', (e) => {
+      if (this.editando || trava || Math.abs(e.deltaY) < 30) return;
+      trava = true;
+      if (e.deltaY > 0) this.avancar(); else this.voltar();
+      setTimeout(() => { trava = false; }, 700);
+    }, { passive: true });
+  }
+
+  alternarTelaCheia() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    else document.exitFullscreen();
+  }
+
+  /* Botão flutuante de tela cheia: some com o mouse parado para não cobrir o slide */
+  setupTelaCheia() {
+    const bt = document.getElementById('telaCheia');
+    let espera;
+    const mostra = () => {
+      bt.classList.add('show');
+      clearTimeout(espera);
+      espera = setTimeout(() => { if (!bt.matches(':hover')) bt.classList.remove('show'); }, 2500);
+    };
+    window.addEventListener('mousemove', mostra);
+    bt.addEventListener('mouseleave', mostra);
+    bt.addEventListener('click', (e) => { e.stopPropagation(); bt.blur(); this.alternarTelaCheia(); });
+    document.addEventListener('fullscreenchange', () => {
+      const ativa = !!document.fullscreenElement;
+      bt.classList.toggle('ativa', ativa);
+      bt.title = ativa ? 'Sair da tela cheia (F ou Esc)' : 'Tela cheia (F)';
+      bt.setAttribute('aria-label', ativa ? 'Sair da tela cheia' : 'Tela cheia');
+    });
+  }
+
+  setupTouchNav() {
+    let x0 = null;
+    window.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    window.addEventListener('touchend', (e) => {
+      if (x0 === null || this.editando) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) { if (dx < 0) this.avancar(); else this.voltar(); }
+      x0 = null;
+    });
+    /* Clique em qualquer ponto do slide também avança */
+    this.stage.addEventListener('click', () => { if (!this.editando) this.avancar(); });
+  }
+
+  /* Quantos passos (cliques) o slide tem */
+  totalPassos(slide) {
+    return Math.max(0, ...[...slide.querySelectorAll('[data-passo]')].map((el) => +el.dataset.passo));
+  }
+
+  /* Próximo bloco do slide; se já mostrou tudo, próximo slide */
+  avancar() {
+    if (this.passo < this.totalPassos(this.slides[this.atual])) this.mostrarPasso(this.passo + 1);
+    else if (this.atual < this.slides.length - 1) this.showSlide(this.atual + 1, 0);
+  }
+
+  /* Esconde o último bloco; no começo do slide, volta ao anterior já completo */
+  voltar() {
+    if (this.passo > 0) this.mostrarPasso(this.passo - 1);
+    else if (this.atual > 0) this.showSlide(this.atual - 1, Infinity);
+  }
+
+  showSlide(i, passo = 0) {
+    const antes = this.slides[this.atual];
+    this.atual = Math.max(0, Math.min(i, this.slides.length - 1));
+    /* Logo e grafismo do canto ficam parados se o slide anterior também tinha */
+    const agora = this.slides[this.atual];
+    ['.logo', '.canto'].forEach((sel) => {
+      const el = agora.querySelector(sel);
+      if (el) el.classList.toggle('fixo', !!(antes && antes !== agora && antes.querySelector(sel)));
+    });
+    this.slides.forEach((s, k) => {
+      s.classList.toggle('active', k === this.atual);
+      s.classList.toggle('visible', k === this.atual);
+      /* Slide que sai volta ao estado inicial, para animar de novo na volta */
+      if (k !== this.atual) s.querySelectorAll('.mostrar').forEach((el) => el.classList.remove('mostrar'));
+    });
+    try { history.replaceState(null, '', '#' + (this.atual + 1)); } catch (e) {}
+    /* Números que entram junto com o slide (fora de data-passo) também contam */
+    this.slides[this.atual].querySelectorAll('[data-minutos], [data-conta]').forEach((el) => { if (!el.closest('[data-passo]')) this.contar(el); });
+    this.mostrarPasso(Math.min(passo, this.totalPassos(this.slides[this.atual])));
+  }
+
+  mostrarPasso(n) {
+    const slide = this.slides[this.atual];
+    this.passo = n;
+    slide.querySelectorAll('[data-passo]').forEach((el) => {
+      const entra = +el.dataset.passo <= n;
+      if (entra && !el.classList.contains('mostrar')) this.contar(el);
+      el.classList.toggle('mostrar', entra);
+    });
+    /* Barra de progresso conta slides e passos */
+    const total = [...this.slides].reduce((s, sl) => s + this.totalPassos(sl) + 1, 0);
+    const feito = [...this.slides].slice(0, this.atual).reduce((s, sl) => s + this.totalPassos(sl) + 1, 0) + n + 1;
+    document.getElementById('progresso').style.width = (feito / total * 100) + '%';
+  }
+
+  /* Conta de 0 até o valor toda vez que o bloco entra.
+     data-minutos = total em minutos (formato XhYYm); data-conta = lê o número do próprio
+     texto ("126h", "− 36h", "31h02m", "~252h", "· 7 entregas") e mantém o resto.
+     Roda mesmo com "reduzir animações" do sistema ligado */
+  contar(bloco) {
+    const sel = '[data-minutos], [data-conta]';
+    (bloco.matches(sel) ? [bloco] : bloco.querySelectorAll(sel)).forEach((el) => {
+      if (!el.dataset.final) el.dataset.final = el.textContent;
+      const final = el.dataset.final;
+      const hm = (m) => Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') + 'm';
+      let alvo, fmt;
+      if (el.dataset.minutos) { alvo = +el.dataset.minutos; fmt = hm; }
+      else {
+        const h = final.match(/^(.*?)(\d+)h(\d{2})m(.*)$/s), n = final.match(/^(.*?)(\d+)(.*)$/s);
+        if (h) { alvo = +h[2] * 60 + +h[3]; fmt = (m) => h[1] + hm(m) + h[4]; }
+        else if (n) { alvo = +n[2]; fmt = (v) => n[1] + v + n[3]; }
+        else return;
+      }
+      const id = (el._contagem = (el._contagem || 0) + 1);
+      const t0 = performance.now() + 250, dur = 1600;
+      const passo = (t) => {
+        const p = Math.min(1, Math.max(0, (t - t0) / dur));
+        const e = 1 - Math.pow(1 - p, 4);
+        if (id !== el._contagem) return; /* outra contagem começou depois desta */
+        el.textContent = p < 1 ? fmt(Math.round(alvo * e)) : final;
+        if (p < 1) requestAnimationFrame(passo);
+      };
+      el.textContent = fmt(0);
+      requestAnimationFrame(passo);
+    });
+  }
+
+  /* ---------- Edição dos textos ---------- */
+  setupEditor() {
+    this.chave = '{{CHAVE_EDICAO}}';
+    this.editaveis = [EDITAVEIS_BASE, ...EDITAVEIS_BLOCOS].join(', ');
+    /* Recupera as edições slide a slide. Um slide só volta da cópia salva se
+       tiver o mesmo nome e a mesma versão (data-v); assim, quando um slide é
+       refeito no arquivo (data-v sobe), a versão nova aparece e os outros
+       slides mantêm as edições. */
+    try {
+      const salvo = localStorage.getItem(this.chave);
+      if (salvo) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = salvo;
+        tmp.querySelectorAll('.slide').forEach((s) => {
+          const atual = [...this.stage.querySelectorAll('.slide')].find((a) => a.getAttribute('aria-label') === s.getAttribute('aria-label'));
+          if (atual && (atual.dataset.v || '1') === (s.dataset.v || '1')) atual.replaceWith(s);
+        });
+      }
+      this.slides = document.querySelectorAll('.slide');
+      if (salvo && this.normalizarMarcadores()) localStorage.setItem(this.chave, this.limpo(this.stage).innerHTML);
+    } catch (e) {}
+
+    const toggle = document.getElementById('editToggle');
+    const hot = document.getElementById('editHotzone');
+    let esconde = null;
+    const mostrar = () => { clearTimeout(esconde); toggle.classList.add('show'); };
+    const ocultar = () => { esconde = setTimeout(() => { if (!this.editando) toggle.classList.remove('show'); }, 400); };
+    hot.addEventListener('mouseenter', mostrar);
+    hot.addEventListener('mouseleave', ocultar);
+    toggle.addEventListener('mouseenter', mostrar);
+    toggle.addEventListener('mouseleave', ocultar);
+    hot.addEventListener('click', () => this.toggleEditMode());
+    toggle.addEventListener('click', () => this.toggleEditMode());
+    this.stage.addEventListener('input', () => {
+      try { localStorage.setItem(this.chave, this.limpo(this.stage).innerHTML); } catch (e) {}
+    });
+  }
+
+  /* Itens de lista (.marcadores li) digitados com várias linhas ou começando com
+     "-", "–" ou "•" viram itens com a bolinha laranja da marca.
+     Devolve true se mudou algo. */
+  normalizarMarcadores() {
+    let mudou = false;
+    const marca = /^\s*[-–•]\s*/;
+    const semTags = (s) => s.replace(/<[^>]+>|&nbsp;/g, ' ').trim();
+    const linhas = (el) => el.innerHTML.split(/<br\s*\/?>|<\/?div[^>]*>|<\/?p[^>]*>|\n/i).map((s) => s.trim()).filter((s) => semTags(s));
+    const tiraMarca = (s) => s.replace(/^((?:\s|<[^>]+>|&nbsp;)*)[-–•]\s*/, '$1');
+
+    this.stage.querySelectorAll('.marcadores li').forEach((li) => {
+      const ls = linhas(li);
+      if (ls.length < 2 && !marca.test(semTags(li.innerHTML))) return;
+      ls.forEach((l) => { const n = document.createElement('li'); n.innerHTML = tiraMarca(l); li.before(n); });
+      li.remove();
+      mudou = true;
+    });
+    return mudou;
+  }
+
+  toggleEditMode() {
+    if (this.editando && this.normalizarMarcadores()) {
+      try { localStorage.setItem(this.chave, this.limpo(this.stage).innerHTML); } catch (e) {}
+    }
+    this.editando = !this.editando;
+    document.body.classList.toggle('editando', this.editando);
+    document.getElementById('editToggle').classList.toggle('active', this.editando);
+    this.stage.querySelectorAll(this.editaveis).forEach((el) => {
+      if (this.editando) el.setAttribute('contenteditable', 'true'); else el.removeAttribute('contenteditable');
+    });
+    this.avisar(this.editando ? 'Edição ligada · Ctrl+S baixa o arquivo · Esc sai' : 'Edição desligada');
+  }
+
+  /* Cópia do palco sem marcas de edição e de estado */
+  limpo(no) {
+    const c = no.cloneNode(true);
+    c.querySelectorAll('[contenteditable]').forEach((el) => el.removeAttribute('contenteditable'));
+    return c;
+  }
+
+  /* Baixa o HTML com os textos editados */
+  baixar() {
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelector('#deckStage').innerHTML = this.limpo(this.stage).innerHTML;
+    doc.querySelectorAll('.slide').forEach((s) => s.classList.remove('active', 'visible'));
+    doc.querySelector('#deckStage').removeAttribute('style');
+    doc.querySelector('body').classList.remove('editando');
+    const blob = new Blob(['<!DOCTYPE html>\n' + doc.outerHTML], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = this.chave.replace(/^sian-/, '') + '.html';
+    a.click();
+    this.avisar('Arquivo baixado');
+  }
+
+  avisar(txt) {
+    const el = document.getElementById('aviso');
+    el.textContent = txt;
+    el.classList.add('show');
+    clearTimeout(this._av);
+    this._av = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+}
+
+new SlidePresentation();
+</script>
+</body>
+</html>
