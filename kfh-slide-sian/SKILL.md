@@ -32,6 +32,7 @@ Em conflito: no **visual** (cor, fonte, grafismo, layout) vale a `kfh-marca-sian
 - O grafismo de canto (`sian-icone-canto.png`) fica sempre no canto inferior **esquerdo**.
 - Painel azul: título laranja e texto branco.
 - Nada de texto, nomes de pessoas ou números da apresentação de referência. Os textos dos blocos são genéricos; troque tudo pelo conteúdo do usuário.
+- Mais de 5 categorias de cor (`.cat-1` a `.cat-5` são as únicas): avise o usuário em vez de inventar cor.
 - Slide refeito: some 1 no `data-v` da `<section>` dele. É assim que a edição guardada no navegador cede à versão nova.
 
 ## Tokens do `:root`
@@ -58,7 +59,7 @@ Já estão na `base/modelo.html`. Não crie outros sem aprovação.
 3. Proponha o roteiro (um título e um bloco do índice por slide) e **espere o ok** do usuário.
 4. Copie `<skill>/base/modelo.html` para `<projeto>/<nome>.rascunho.html`. `<skill>` é a pasta desta skill: no Claude Code, `~/.claude/skills/kfh-slide-sian/`; no repo, `kfh-slide-sian/`.
 5. Monte no rascunho:
-   - capa e encerramento (já no modelo; encerramento só quando o usuário quiser; o roteiro da capa lista os slides: até cerca de 8 itens com `class="capa-roteiro"`, de 9 a 12 com `class="capa-roteiro denso"`, e mais que isso pede agrupar seções) e um `<section class="slide" data-v="1">` por slide, com os blocos dentro do `.corpo`;
+   - capa e encerramento (já no modelo; encerramento só quando o usuário quiser; o roteiro da capa lista os slides: até cerca de 8 itens com `class="capa-roteiro"`, de 9 a 12 com `class="capa-roteiro denso"`, e mais que isso pede agrupar seções) e um `<section class="slide" aria-label="<rótulo único>" data-v="1">` por slide (o `aria-label` é a chave da edição salva no navegador: **precisa ser único**, senão slides trocam edições; o `conferir` reprova repetidos), com os blocos dentro do `.corpo`;
    - cole o CSS de cada bloco usado, e só o dos usados, no `<style>`;
    - cole a linha "Editáveis" de cada bloco usado como **uma string** em `EDITAVEIS_BLOCOS`;
    - mantenha os marcadores `{{...}}` do modelo, o script os troca;

@@ -1,7 +1,7 @@
 """Confere se um HTML de apresentação respeita cor e fonte do padrão SIAN.
 
 Uso: python conferir.py <arquivo.html>
-Sai com 1 se houver cor ou fonte fora do padrão; senão imprime OK e sai com 0.
+Sai com 1 se houver cor ou fonte fora do padrão ou aria-label repetido entre slides; senão imprime OK e sai com 0.
 """
 from __future__ import annotations
 
@@ -114,6 +114,29 @@ def fontes_invalidas(html: str) -> list[str]:
     return invalidas
 
 
+_SLIDE = re.compile(r"<section\b([^>]*)>", re.IGNORECASE)
+_CLASSE_SLIDE = re.compile(r"""\bclass\s*=\s*["']([^"']*)["']""", re.IGNORECASE)
+_ARIA_LABEL = re.compile(r"""\baria-label\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.IGNORECASE)
+
+
+def rotulos_repetidos(html: str) -> list[str]:
+    """aria-label repetidos entre os <section class="slide...">: a edição salva casa por ele."""
+    vistos: set[str] = set()
+    repetidos: list[str] = []
+    for atributos in _SLIDE.findall(html):
+        classe = _CLASSE_SLIDE.search(atributos)
+        if not classe or "slide" not in classe.group(1).split():
+            continue
+        rotulo = _ARIA_LABEL.search(atributos)
+        if not rotulo:
+            continue
+        valor = rotulo.group(1) if rotulo.group(1) is not None else rotulo.group(2)
+        if valor in vistos and valor not in repetidos:
+            repetidos.append(valor)
+        vistos.add(valor)
+    return repetidos
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
         print("Uso: python conferir.py <arquivo.html>")
@@ -123,6 +146,7 @@ def main(argv: list[str]) -> int:
         [f"cor fora do :root: {c}" for c in cores_literais(html)]
         + [f"cor não oficial no :root: {c}" for c in paleta_root_invalida(html)]
         + [f"fonte fora do padrão: {f}" for f in fontes_invalidas(html)]
+        + [f"aria-label repetido entre slides: {r}" for r in rotulos_repetidos(html)]
     )
     if not problemas:
         print("OK")

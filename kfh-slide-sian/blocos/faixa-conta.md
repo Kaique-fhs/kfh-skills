@@ -17,10 +17,10 @@
 ## HTML
 ```html
 <div class="faixa-conta reveal" data-passo="1" style="--d:.05s">
-  <div><b data-conta>22</b><span>legenda do total</span></div>
-  <div><b data-conta>100h</b><span>legenda da base</span></div>
-  <div><b data-conta>− 10h</b><span>legenda do ajuste</span></div>
-  <div><b data-conta>90h</b><span>legenda do subtotal</span></div>
-  <div><b data-conta>72h</b><span>legenda do resultado</span></div>
+  <div><b data-conta>20</b><span>legenda do total</span></div>
+  <div><b data-conta>160h</b><span>legenda da base</span></div>
+  <div><b data-conta>− 20h</b><span>legenda do ajuste</span></div>
+  <div><b data-conta>140h</b><span>legenda do subtotal</span></div>
+  <div><b data-conta>112h</b><span>legenda do resultado</span></div>
 </div>
 ```

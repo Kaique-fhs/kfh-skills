@@ -40,6 +40,8 @@ def test_modelo_sem_conteudo_da_referencia():
     proibidos = r"rayssa|ka[ií]que|marcelo|sgc|sco|banco de horas"
     assert re.search(rf"\b(?:{proibidos})\b", texto, re.IGNORECASE) is None
     assert not re.search(r"#F5F4F2|#E6E3DF", texto, re.IGNORECASE)
+    # números da apresentação de referência (já vazaram uma vez no comentário de contar())
+    assert not re.search(r"126h|− 36h|31h02m|~252h|· 7 entregas", texto)
 
 
 def test_js_so_tem_o_marcador_da_chave():

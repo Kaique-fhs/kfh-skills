@@ -4,7 +4,7 @@
 - **Chaves opcionais:** `.ev-per` (laranja, abaixo da linha) para uma entrega que cobre um período e tem subetapas, uma por clique (`.ev-etapas`); `--ini` é onde a chave começa, em % da largura do próprio elemento. `.ev-mes` (azul, acima da linha) para várias entregas num intervalo sem data fechada, listadas em `.ev-lin`. Use só quando houver esse caso; no cronograma comum, balões bastam.
 - **Quando não usar:** poucos marcos (use linha do tempo com cartões), ou entregas sem data.
 - **Passos de clique:** um balão por clique, em ordem de data (faixas de período, início e legenda já aparecem).
-- **Editáveis:** `.cr-leg span, .cr-faixa, .cr-ini, .ev-data, .ev-nome, .ev-tag`
+- **Editáveis:** `.cr-leg span, .cr-faixa, .cr-ini, .ev-data, .ev-nome, .ev-tag, .ev-etapas b, .ev-etapas span, .ev-lin span`
 ## CSS
 ```css
 /* Lados: .ev.a = azul, balão ACIMA da linha; .ev.b = laranja, balão ABAIXO.
@@ -83,7 +83,7 @@
       <div class="ev-card"><div class="ev-data">06/03</div><div class="ev-nome">Entrega 6</div><span class="ev-tag">Etiqueta</span></div></div>
 
     <!-- Chave de período (opcional, abaixo da linha): uma subetapa por clique. Cobre de 0% a 25% do período;
-         --ini:37.5% faz a chave começar em 37,5% da largura do elemento (a data da primeira subetapa). -->
+         --ini:37.5% faz a chave começar em 37,5% da largura do elemento (a data da Subetapa B, 07/01). -->
     <div class="ev-per reveal" data-passo="7" style="left:0; width:25%; --ini:37.5%; --d:.05s">
       <div class="ev-card"><div class="ev-nome">Entrega com subetapas</div>
         <div class="ev-etapas">

@@ -3,7 +3,7 @@
 - **Quando usar:** duas alternativas com resultado em números (valor inicial, ajuste, valor final).
 - **Quando não usar:** comparação só de texto (use dois lados), ou mais de dois cenários.
 - **Passos de clique:** 1) cenário A (base); 2) cenário B (comparativo).
-- **Editáveis:** `.cenario .rot-c, .cenario .tit-c, .termo .legenda, .linha span`
+- **Editáveis:** `.cenario .rot-c, .cenario .tit-c, .termo .legenda, .linha span, .barra-saldo div`
 ## CSS
 ```css
 .cenarios { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }

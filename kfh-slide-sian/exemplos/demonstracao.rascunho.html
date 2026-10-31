@@ -260,9 +260,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
 .lado.claro { background: var(--fundo-cartao); border: 3px solid var(--cinza-claro); }
 .lado .quem { font-size: 23px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--laranja); }
 .lado .nome { font-size: 52px; font-weight: 800; margin-top: 4px; }
-.lado ul { list-style: none; margin-top: 22px; }
-.lado li { font-size: 30px; line-height: 1.32; padding-left: 34px; position: relative; margin-top: 14px; }
-.lado li::before { content: ""; position: absolute; left: 0; top: 13px; width: 14px; height: 14px; border-radius: 50%; background: var(--laranja); }
+.lado .marcadores { margin-top: 22px; }
 .versus { display: flex; align-items: center; justify-content: center; }
 .versus span { width: 92px; height: 92px; border-radius: 50%; background: var(--branco); border: 3px solid var(--cinza-claro); display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 800; color: var(--laranja); }
 /* ---- Dois cenários ---- */
@@ -528,7 +526,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
             <div class="ev-card"><div class="ev-data">06/03</div><div class="ev-nome">Entrega 6</div><span class="ev-tag">Etiqueta</span></div></div>
 
           <!-- Chave de período (opcional, abaixo da linha): uma subetapa por clique. Cobre de 0% a 25% do período;
-               --ini:37.5% faz a chave começar em 37,5% da largura do elemento (a data da primeira subetapa). -->
+               --ini:37.5% faz a chave começar em 37,5% da largura do elemento (a data da Subetapa B, 07/01). -->
           <div class="ev-per reveal" data-passo="7" style="left:0; width:25%; --ini:37.5%; --d:.05s">
             <div class="ev-card"><div class="ev-nome">Entrega com subetapas</div>
               <div class="ev-etapas">
@@ -604,7 +602,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
         <div class="lado destaque reveal da-esquerda" data-passo="1" style="--d:.05s">
           <div class="quem">Papel A</div>
           <div class="nome">Posição A</div>
-          <ul>
+          <ul class="marcadores">
             <li>Primeiro ponto da posição A</li>
             <li>Segundo ponto da posição A</li>
           </ul>
@@ -613,7 +611,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
         <div class="lado claro reveal da-direita" data-passo="2" style="--d:.05s">
           <div class="quem">Papel B</div>
           <div class="nome">Posição B</div>
-          <ul>
+          <ul class="marcadores">
             <li>Primeiro ponto da posição B</li>
             <li>Segundo ponto da posição B</li>
           </ul>
@@ -717,11 +715,11 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
 
     <div class="corpo">
       <div class="faixa-conta reveal" data-passo="1" style="--d:.05s">
-        <div><b data-conta>22</b><span>legenda do total</span></div>
-        <div><b data-conta>100h</b><span>legenda da base</span></div>
-        <div><b data-conta>− 10h</b><span>legenda do ajuste</span></div>
-        <div><b data-conta>90h</b><span>legenda do subtotal</span></div>
-        <div><b data-conta>72h</b><span>legenda do resultado</span></div>
+        <div><b data-conta>20</b><span>legenda do total</span></div>
+        <div><b data-conta>160h</b><span>legenda da base</span></div>
+        <div><b data-conta>− 20h</b><span>legenda do ajuste</span></div>
+        <div><b data-conta>140h</b><span>legenda do subtotal</span></div>
+        <div><b data-conta>112h</b><span>legenda do resultado</span></div>
       </div>
     </div>
 
@@ -806,11 +804,11 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
 
     <div class="corpo">
       <div class="faixa-conta reveal" data-passo="1" style="--d:.05s">
-        <div><b data-conta>22</b><span>legenda do total</span></div>
-        <div><b data-conta>100h</b><span>legenda da base</span></div>
-        <div><b data-conta>− 10h</b><span>legenda do ajuste</span></div>
-        <div><b data-conta>90h</b><span>legenda do subtotal</span></div>
-        <div><b data-conta>72h</b><span>legenda do resultado</span></div>
+        <div><b data-conta>20</b><span>legenda do total</span></div>
+        <div><b data-conta>160h</b><span>legenda da base</span></div>
+        <div><b data-conta>− 20h</b><span>legenda do ajuste</span></div>
+        <div><b data-conta>140h</b><span>legenda do subtotal</span></div>
+        <div><b data-conta>112h</b><span>legenda do resultado</span></div>
       </div>
       <div class="barra-emp">
         <div class="rotulo-linha reveal" data-passo="2" style="--d:.05s"><span class="t">Como o total se divide</span><span class="v">Total <b>100h</b></span></div>
@@ -866,14 +864,14 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
    contagem dos números e edição dos textos
    =========================================== */
 /* Textos editáveis da base; cada bloco usado acrescenta a sua linha em EDITAVEIS_BLOCOS */
-const EDITAVEIS_BASE = '.kicker, h1, .nota, .capa-titulo, .capa-sub, .capa-rot, .capa-roteiro li, .enc-titulo, .enc-sub';
+const EDITAVEIS_BASE = '.kicker, h1, .nota, .capa-titulo, .capa-sub, .capa-rot, .capa-roteiro li, .enc-titulo, .enc-sub, .marcadores li';
 const EDITAVEIS_BLOCOS = [
   '.cn .on, .cn .onome, .cn .odesc, .cn .oquando, .cn .olista span',
   '.lt-mes, .lt-marco span, .lc-data, .lc-nome, .lc-desc, .lc-etapas div',
-  '.cr-leg span, .cr-faixa, .cr-ini, .ev-data, .ev-nome, .ev-tag',
+  '.cr-leg span, .cr-faixa, .cr-ini, .ev-data, .ev-nome, .ev-tag, .ev-etapas b, .ev-etapas span, .ev-lin span',
   '.etapa .rot, .etapa p',
-  '.lado .quem, .lado .nome, .lado li',
-  '.cenario .rot-c, .cenario .tit-c, .termo .legenda, .linha span',
+  '.lado .quem, .lado .nome',
+  '.cenario .rot-c, .cenario .tit-c, .termo .legenda, .linha span, .barra-saldo div',
   '.rotulo-linha .t, .rotulo-linha .v, .empilhada div',
   '.faixa-conta b, .faixa-conta span',
   '.destaque-mes .rot-m, .destaque-mes .tit-m, .destaque-mes .hrs-m, .destaque-mes .sub-m, .destaque-mes .linhas-m span, .lista-mes .rot-l, .lista-mes .nm, .lista-mes .hm',
@@ -1035,7 +1033,7 @@ class SlidePresentation {
 
   /* Conta de 0 até o valor toda vez que o bloco entra.
      data-minutos = total em minutos (formato XhYYm); data-conta = lê o número do próprio
-     texto ("126h", "− 36h", "31h02m", "~252h", "· 7 entregas") e mantém o resto.
+     texto ("10h", "− 2h", "1h30m", "~40h", "· 3 itens") e mantém o resto.
      Roda mesmo com "reduzir animações" do sistema ligado */
   contar(bloco) {
     const sel = '[data-minutos], [data-conta]';

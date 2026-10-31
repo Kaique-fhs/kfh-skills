@@ -232,7 +232,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
    contagem dos números e edição dos textos
    =========================================== */
 /* Textos editáveis da base; cada bloco usado acrescenta a sua linha em EDITAVEIS_BLOCOS */
-const EDITAVEIS_BASE = '.kicker, h1, .nota, .capa-titulo, .capa-sub, .capa-rot, .capa-roteiro li, .enc-titulo, .enc-sub';
+const EDITAVEIS_BASE = '.kicker, h1, .nota, .capa-titulo, .capa-sub, .capa-rot, .capa-roteiro li, .enc-titulo, .enc-sub, .marcadores li';
 const EDITAVEIS_BLOCOS = [ /* cole aqui a linha "Editáveis" de cada bloco usado */ ];
 
 class SlidePresentation {
@@ -389,7 +389,7 @@ class SlidePresentation {
 
   /* Conta de 0 até o valor toda vez que o bloco entra.
      data-minutos = total em minutos (formato XhYYm); data-conta = lê o número do próprio
-     texto ("126h", "− 36h", "31h02m", "~252h", "· 7 entregas") e mantém o resto.
+     texto ("10h", "− 2h", "1h30m", "~40h", "· 3 itens") e mantém o resto.
      Roda mesmo com "reduzir animações" do sistema ligado */
   contar(bloco) {
     const sel = '[data-minutos], [data-conta]';

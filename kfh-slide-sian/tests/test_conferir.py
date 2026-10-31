@@ -5,6 +5,7 @@ from conferir import (
     fontes_invalidas,
     main,
     paleta_root_invalida,
+    rotulos_repetidos,
 )
 
 
@@ -61,3 +62,30 @@ def test_main_codigo_de_saida(tmp_path, capsys):
     assert "OK" in capsys.readouterr().out
     assert main([str(sujo)]) == 1
     assert "#F5F4F2" in capsys.readouterr().out
+
+
+def test_rotulos_repetidos_devolve_o_repetido():
+    html = (
+        '<section class="slide" aria-label="X" data-v="1"></section>'
+        '<section class="slide capa" aria-label="X" data-v="1"></section>'
+    )
+    assert rotulos_repetidos(html) == ["X"]
+
+
+def test_rotulos_unicos_devolvem_vazio():
+    html = (
+        '<section class="slide" aria-label="A" data-v="1"></section>'
+        '<section class="slide" aria-label="B" data-v="1"></section>'
+        '<button aria-label="A"></button>'
+    )
+    assert rotulos_repetidos(html) == []
+
+
+def test_main_reprova_rotulo_repetido(tmp_path, capsys):
+    arq = tmp_path / "rep.html"
+    arq.write_text(
+        '<section class="slide" aria-label="X"></section><section class="slide" aria-label="X"></section>',
+        encoding="utf-8",
+    )
+    assert main([str(arq)]) == 1
+    assert "X" in capsys.readouterr().out
