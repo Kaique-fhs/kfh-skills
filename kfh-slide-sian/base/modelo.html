@@ -115,6 +115,9 @@ h1 { font-size: 76px; font-weight: 800; line-height: 1.05; margin-top: 12px; let
 .capa-roteiro { list-style: none; }
 .capa-roteiro li { display: flex; align-items: baseline; gap: 24px; font-size: 30px; font-weight: 600; padding: 18px 0; border-bottom: 2px solid var(--branco-18); }
 .capa-roteiro li b { font-size: 26px; font-weight: 800; color: var(--laranja); font-variant-numeric: tabular-nums; }
+/* Variante para 9 a 12 itens: sem ela, mais de 8 itens estouram o painel */
+.capa-roteiro.denso li { font-size: 26px; padding: 8px 0; }
+.capa-roteiro.denso li b { font-size: 22px; }
 
 /* ===========================================
    ENCERRAMENTO

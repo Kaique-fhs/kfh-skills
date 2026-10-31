@@ -58,7 +58,7 @@ Já estão na `base/modelo.html`. Não crie outros sem aprovação.
 3. Proponha o roteiro (um título e um bloco do índice por slide) e **espere o ok** do usuário.
 4. Copie `<skill>/base/modelo.html` para `<projeto>/<nome>.rascunho.html`. `<skill>` é a pasta desta skill: no Claude Code, `~/.claude/skills/kfh-slide-sian/`; no repo, `kfh-slide-sian/`.
 5. Monte no rascunho:
-   - capa e encerramento (já no modelo; encerramento só quando o usuário quiser) e um `<section class="slide" data-v="1">` por slide, com os blocos dentro do `.corpo`;
+   - capa e encerramento (já no modelo; encerramento só quando o usuário quiser; o roteiro da capa lista os slides: até cerca de 8 itens com `class="capa-roteiro"`, de 9 a 12 com `class="capa-roteiro denso"`, e mais que isso pede agrupar seções) e um `<section class="slide" data-v="1">` por slide, com os blocos dentro do `.corpo`;
    - cole o CSS de cada bloco usado, e só o dos usados, no `<style>`;
    - cole a linha "Editáveis" de cada bloco usado como **uma string** em `EDITAVEIS_BLOCOS`;
    - mantenha os marcadores `{{...}}` do modelo, o script os troca;

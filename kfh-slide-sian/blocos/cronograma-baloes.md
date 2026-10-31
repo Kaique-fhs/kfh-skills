@@ -60,7 +60,7 @@
 <div class="crono">
   <div class="cr-leg reveal" style="--d:.25s">
     <span class="a"><i></i>Frente A <b data-conta>· 4 entregas</b></span>
-    <span class="b"><i></i>Frente B <b data-conta>· 4 entregas</b></span>
+    <span class="b"><i></i>Frente B <b data-conta>· 5 entregas</b></span>
   </div>
   <!-- Período fictício de 64 dias, de 01/01 a 06/03. Posição: (dias desde o início ÷ 64) × 100%.
        Faixas de período: posição e largura em style="left:..;width:.." (a soma fecha 100%). -->

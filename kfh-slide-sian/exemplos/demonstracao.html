@@ -250,6 +250,9 @@ h1 { font-size: 76px; font-weight: 800; line-height: 1.05; margin-top: 12px; let
 .capa-roteiro { list-style: none; }
 .capa-roteiro li { display: flex; align-items: baseline; gap: 24px; font-size: 30px; font-weight: 600; padding: 18px 0; border-bottom: 2px solid var(--branco-18); }
 .capa-roteiro li b { font-size: 26px; font-weight: 800; color: var(--laranja); font-variant-numeric: tabular-nums; }
+/* Variante para 9 a 12 itens: sem ela, mais de 8 itens estouram o painel */
+.capa-roteiro.denso li { font-size: 26px; padding: 8px 0; }
+.capa-roteiro.denso li b { font-size: 22px; }
 
 /* ===========================================
    ENCERRAMENTO
@@ -467,11 +470,6 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
 /* ---- Faixa de destaque ---- */
 .faixa { background: var(--fundo-cartao); border-left: 8px solid var(--laranja); border-radius: 0 14px 14px 0; padding: 18px 30px; font-size: 25px; line-height: 1.35; }
 .faixa b { font-weight: 800; }
-/* Ajuste da capa: roteiro com 12 itens */
-.capa-painel { padding-top: 90px; }
-.capa-roteiro li { font-size: 26px; padding: 8px 0; }
-.capa-roteiro li b { font-size: 22px; }
-
 /* O CSS de cada bloco usado entra aqui, acima desta linha */
 </style>
 </head>
@@ -499,7 +497,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
 
     <div class="capa-painel reveal da-direita" style="--d:.4s">
       <div class="capa-rot">Nesta apresentação</div>
-      <ol class="capa-roteiro">
+      <ol class="capa-roteiro denso">
         <li><b>01</b>Cartões numerados</li>
         <li><b>02</b>Linha do tempo</li>
         <li><b>03</b>Cronograma</li>
@@ -642,7 +640,7 @@ body.editando [contenteditable="true"] { outline: 2px dashed var(--laranja-60); 
       <div class="crono">
         <div class="cr-leg reveal" style="--d:.25s">
           <span class="a"><i></i>Frente A <b data-conta>· 4 entregas</b></span>
-          <span class="b"><i></i>Frente B <b data-conta>· 4 entregas</b></span>
+          <span class="b"><i></i>Frente B <b data-conta>· 5 entregas</b></span>
         </div>
         <!-- Período fictício de 64 dias, de 01/01 a 06/03. Posição: (dias desde o início ÷ 64) × 100%.
              Faixas de período: posição e largura em style="left:..;width:.." (a soma fecha 100%). -->
