@@ -6,8 +6,8 @@
 - **Editáveis:** `.faixa-conta b, .faixa-conta span`
 ## CSS
 ```css
-.faixa-conta { display: flex; border: 2px solid var(--divisor); border-radius: 20px; overflow: hidden; }
-.faixa-conta > div { flex: 1; padding: 18px 28px; border-right: 2px solid var(--divisor); }
+.faixa-conta { display: flex; flex-shrink: 0; border: 2px solid var(--divisor); border-radius: 20px; overflow: hidden; }
+.faixa-conta > div { flex: 1; padding: 16px 28px; border-right: 2px solid var(--divisor); }
 .faixa-conta > div:last-child { border-right: none; background: var(--azul); }
 .faixa-conta b { display: block; font-size: 40px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .faixa-conta span { font-size: 19px; font-weight: 600; color: var(--cinza-escuro); }

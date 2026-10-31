@@ -6,7 +6,7 @@
 - **Editáveis:** `.rotulo-linha .t, .rotulo-linha .v, .empilhada div`
 ## CSS
 ```css
-.barra-emp { width: 100%; }
+.barra-emp { width: 100%; flex-shrink: 0; }
 .empilhada { display: flex; gap: 4px; border-radius: 14px; overflow: hidden; }
 .empilhada div { display: flex; align-items: center; justify-content: center; font-weight: 700; white-space: nowrap; overflow: hidden; }
 .rotulo-linha { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
@@ -27,8 +27,8 @@
     <div class="cat-1 estica" data-passo="1" style="flex:40">Categoria 1<small>40h · 40%</small></div>
     <div class="cat-2 estica" data-passo="2" style="flex:30">Categoria 2<small>30h · 30%</small></div>
     <div class="cat-3 estica" data-passo="3" style="flex:20">Categoria 3<small>20h · 20%</small></div>
-    <div class="cat-4 estreito estica" data-passo="4" style="flex:6">Categoria 4<small>6h · 6%</small></div>
-    <div class="cat-5 estreito estica" data-passo="5" style="flex:4">Categoria 5<small>4h · 4%</small></div>
+    <div class="cat-4 estreito estica" data-passo="4" style="flex:6">Cat. 4<small>6h · 6%</small></div>
+    <div class="cat-5 estreito estica" data-passo="5" style="flex:4">Cat. 5<small>4h · 4%</small></div>
   </div>
 </div>
 ```

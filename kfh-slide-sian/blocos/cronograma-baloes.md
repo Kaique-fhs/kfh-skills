@@ -60,7 +60,7 @@
 <div class="crono">
   <div class="cr-leg reveal" style="--d:.25s">
     <span class="a"><i></i>Frente A <b data-conta>· 4 entregas</b></span>
-    <span class="b"><i></i>Frente B <b data-conta>· 3 entregas</b></span>
+    <span class="b"><i></i>Frente B <b data-conta>· 4 entregas</b></span>
   </div>
   <!-- Período fictício de 64 dias, de 01/01 a 06/03. Posição: (dias desde o início ÷ 64) × 100%.
        Faixas de período: posição e largura em style="left:..;width:.." (a soma fecha 100%). -->
@@ -77,7 +77,7 @@
       <div class="ev-card"><div class="ev-data">27/01</div><div class="ev-nome">Entrega 3</div><span class="ev-tag">Etiqueta</span></div></div>
     <div class="ev b reveal" data-passo="4" style="left:50%; --h:36px; --d:.05s"><i></i>
       <div class="ev-card"><div class="ev-data">02/02</div><div class="ev-nome">Entrega 4</div><span class="ev-tag">Etiqueta</span></div></div>
-    <div class="ev a esq reveal" data-passo="5" style="left:75%; --h:150px; --d:.05s"><i></i>
+    <div class="ev b reveal" data-passo="5" style="left:75%; --h:160px; --d:.05s"><i></i>
       <div class="ev-card"><div class="ev-data">18/02</div><div class="ev-nome">Entrega 5</div><span class="ev-tag">Etiqueta</span></div></div>
     <div class="ev b esq reveal" data-passo="6" style="left:100%; --h:36px; --d:.05s"><i></i>
       <div class="ev-card"><div class="ev-data">06/03</div><div class="ev-nome">Entrega 6</div><span class="ev-tag">Etiqueta</span></div></div>

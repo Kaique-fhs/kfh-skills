@@ -6,15 +6,15 @@
 - **Editáveis:** `.destaque-mes .rot-m, .destaque-mes .tit-m, .destaque-mes .hrs-m, .destaque-mes .sub-m, .destaque-mes .linhas-m span, .lista-mes .rot-l, .lista-mes .nm, .lista-mes .hm`
 ## CSS
 ```css
-.destaque-lista { display: grid; grid-template-columns: 660px 1fr; gap: 56px; }
-.destaque-mes { background: var(--azul); color: var(--branco); border-radius: 24px; padding: 30px 40px 26px; }
+.destaque-lista { flex-shrink: 0; display: grid; grid-template-columns: 660px 1fr; gap: 56px; }
+.destaque-mes { background: var(--azul); color: var(--branco); border-radius: 24px; padding: 26px 40px 22px; }
 .destaque-mes .rot-m { font-size: 21px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--laranja); }
 .destaque-mes .topo-m { display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px; }
 .destaque-mes .tit-m { font-size: 42px; font-weight: 800; }
 .destaque-mes .hrs-m { font-size: 60px; font-weight: 800; color: var(--laranja); font-variant-numeric: tabular-nums; }
 .destaque-mes .sub-m { font-size: 20px; color: var(--cinza-claro); margin-top: 2px; }
-.destaque-mes .linhas-m { margin-top: 16px; }
-.destaque-mes .linhas-m div { display: flex; justify-content: space-between; font-size: 26px; font-weight: 600; padding: 9px 0; border-top: 2px solid var(--branco-18); }
+.destaque-mes .linhas-m { margin-top: 12px; }
+.destaque-mes .linhas-m div { display: flex; justify-content: space-between; font-size: 26px; font-weight: 600; padding: 8px 0; border-top: 2px solid var(--branco-18); }
 .destaque-mes .linhas-m div span:last-child { font-weight: 800; font-variant-numeric: tabular-nums; }
 .lista-mes .rot-l { font-size: 22px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--cinza-escuro); margin-bottom: 6px; }
 .lista-mes .item { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 0 14px; padding: 14px 0; border-bottom: 2px solid var(--divisor); }
