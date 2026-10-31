@@ -27,7 +27,7 @@
 ```
 ## HTML
 ```html
-<!-- Período fictício de 60 dias, de 01/01 a 01/03. Posição: (dias desde o início ÷ 60) × 100% -->
+<!-- Período fictício de 60 dias, de 01/01 a 02/03. Posição: (dias desde o início ÷ 60) × 100% -->
 <div class="linha-tempo reveal" style="--d:.3s">
   <div class="lt-trilho"></div>
   <div class="lt-mes" style="left:5%">Período 1</div>
@@ -37,7 +37,7 @@
   <div class="lt-marco reveal cresce" data-passo="1" style="left:25%; --d:.05s"><i></i><span>16/01</span></div>
   <div class="lt-marco reveal cresce" data-passo="2" style="left:40%; --d:.05s"><i></i><span>25/01</span></div>
   <div class="lt-marco reveal cresce" data-passo="3" style="left:70%; --d:.05s"><i></i><span>12/02</span></div>
-  <div class="lt-marco fim reveal cresce" data-passo="4" style="left:100%; --d:.05s"><i></i><span>01/03</span></div>
+  <div class="lt-marco fim reveal cresce" data-passo="4" style="left:100%; --d:.05s"><i></i><span>02/03</span></div>
 </div>
 <div class="lc-cards">
   <div class="lc reveal" data-passo="1" style="--d:.15s">
@@ -59,7 +59,7 @@
     <div class="lc-desc">Descrição curta do marco 3</div>
   </div>
   <div class="lc reveal" data-passo="4" style="--d:.15s">
-    <div class="lc-data"><small>até</small>01/03</div>
+    <div class="lc-data"><small>até</small>02/03</div>
     <div class="lc-nome">Marco 4</div>
     <div class="lc-desc">Descrição curta do marco 4</div>
   </div>
